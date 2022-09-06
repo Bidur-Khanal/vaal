@@ -11,11 +11,12 @@ from utils import *
 import math
 from exr_data import readEXR
 import random
+import pdb
 
 class LiverSegDataset(Dataset):
 
 
-    def __init__(self, root_dir):
+    def __init__(self, root_dir, train = True, flip=False, resize = None, scale= None, crop=None):
 
         # Based on https://github.com/mcordts/cityscapesScripts
         Seg_classes = namedtuple('Class', ['name', 'train_id','color', 'color_name'])
@@ -31,7 +32,12 @@ class LiverSegDataset(Dataset):
         self.color_to_train_ids = dict(zip(self.colors,self.train_ids))
         self.train_ids_to_color = dict(zip(self.train_ids,self.colors))
 
-    
+
+        self.flip = flip
+        self.scale = scale
+        self.resize = resize
+        self.crop = crop
+
         self.root_dir = root_dir
         self.image_dir = 'translation_random_views/random_views'
         self.mask_dir = 'segmentation_random_views/random_views'
@@ -51,22 +57,24 @@ class LiverSegDataset(Dataset):
         ])
       
        
-        self.image_files = list()
-        for (dirpath, dirnames, filenames) in os.walk(os.path.join(self.root_dir, self.image_dir)):
-            self.image_files += [os.path.join(dirpath, file) for file in filenames if file.endswith('.png')]
-        self.image_files.sort()
+        if train:
+            train_files = (numpy.load('train_files.npy', allow_pickle='TRUE')).item()
+            self.image_files = train_files['images'].tolist()
+            self.mask_files = train_files['masks'].tolist()
+            self.depth_files = train_files['depths'].tolist()
 
-        self.mask_files = list()
-        for (dirpath, dirnames, filenames) in os.walk(os.path.join(self.root_dir, self.mask_dir)):
-            self.mask_files += [os.path.join(dirpath, file) for file in filenames if file.endswith('.png')]
-        self.mask_files.sort()
+        else:
+            test_files = (numpy.load('test_files.npy', allow_pickle='TRUE')).item()
+            self.image_files = test_files['images'].tolist()
+            self.mask_files = test_files['masks'].tolist()
+            self.depth_files = test_files['depths'].tolist()
 
+        ## clip the list of images to debug
+        # self.image_files = self.image_files[0:1000]
+        # self.mask_files = self.mask_files[0:1000]
+        # self.depth_files = self.depth_files[0:1000]
 
-        self.depth_files = list()
-        for (dirpath, dirnames, filenames) in os.walk(os.path.join(self.root_dir, self.depth_map_dir)):
-            self.depth_files += [os.path.join(dirpath, file) for file in filenames if file.endswith('.exr')]
-        self.depth_files.sort()
-
+        
 
     def encode_target(self, target):
 
@@ -77,19 +85,18 @@ class LiverSegDataset(Dataset):
             idx = (target==torch.tensor(k, dtype=torch.uint8).unsqueeze(1).unsqueeze(2))
             validx = (idx.sum(0) == 3)  # Check that all channels match
             new_mask[validx] = torch.tensor(self.color_to_train_ids[k], dtype=torch.long)
-        new_mask = torch.unsqueeze(new_mask, dim=0)
+     
         return new_mask
 
   
     def decode_target(self, target):
-        c,h,w = target.shape
+        h,w = target.shape
         
         new_mask = torch.zeros(h, w, 3, dtype=torch.uint8)
         for k in self.train_ids_to_color:
             # Get all indices for current class
             idx = (target==torch.tensor(k, dtype=torch.long))
-            validx = (idx.sum(0) == 1)  # Check that all channels match
-            new_mask[validx] = torch.tensor(self.train_ids_to_color[k], dtype=torch.uint8)
+            new_mask[idx] = torch.tensor(self.train_ids_to_color[k], dtype=torch.uint8)
 
         # new_mask = new_mask.permute(2,0,1)
         return new_mask
@@ -106,22 +113,27 @@ class LiverSegDataset(Dataset):
         image = Image.open(self.image_files[idx]).convert('RGB')
         mask = Image.open(self.mask_files[idx]).convert('RGB')
         depth = readEXR(self.depth_files[idx])
-    
-        image, mask, depth = preprocess(image, mask, depth, transform= self.transform_x, target_transform= self.transform_y, depth_transform = self.transform_z , scale = (0.5,0.5), flip= True)
+       
+     
+
+        image, mask, depth = preprocess(image, mask, depth, transform= self.transform_x, target_transform= self.transform_y, 
+                            depth_transform = self.transform_z , scale = self.scale, flip= self.flip, resize= self.resize, crop= self.crop)
         
         mask = self.encode_target(mask)
-        
+       
         return image, mask, depth
 
 
 def preprocess(image, mask, depth= None, transform = None, target_transform = None, depth_transform = None, flip=False, resize = None, scale=None, crop=None):
     if flip:
-        if random.random() < 0.9:
+        if random.random() < 0.5:
             image = image.transpose(Image.FLIP_LEFT_RIGHT)
             mask = mask.transpose(Image.FLIP_LEFT_RIGHT)
             if depth is not None:
                 depth = depth.transpose(Image.FLIP_LEFT_RIGHT)
-    if scale:
+
+    
+    if scale :
         w, h = image.size
         rand_log_scale = math.log(scale[0], 2) + random.random() * (math.log(scale[1], 2) - math.log(scale[0], 2))
         random_scale = math.pow(2, rand_log_scale)
@@ -170,4 +182,6 @@ def preprocess(image, mask, depth= None, transform = None, target_transform = No
     if depth is not None:
         return image, mask, depth
     else:
-        return image, mask
+        return image, mask, 0
+
+

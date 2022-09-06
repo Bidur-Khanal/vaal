@@ -3,18 +3,64 @@ import os
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--cuda', action='store_true', help='If training is to be done on a GPU')
-    parser.add_argument('--dataset', type=str, default='cifar10', help='Name of the dataset used.')
+
+    # general training related 
+    parser.add_argument('--gpu_id', type =str , default= '0',help='select a gpu id')
+    parser.add_argument('--dataset', type=str, default='liver-seg', help='Name of the dataset used.')
     parser.add_argument('--batch_size', type=int, default=128, help='Batch size used for training and testing')
     parser.add_argument('--train_epochs', type=int, default=100, help='Number of training epochs')
-    parser.add_argument('--latent_dim', type=int, default=32, help='The dimensionality of the VAE latent dimension')
     parser.add_argument('--data_path', type=str, default='./data', help='Path to where the data is')
+    parser.add_argument('--seed', type=int, default=0, help='use a random seed')
+    
+
+
+    # select the query strategy method
+    parser.add_argument('--method', type=str, default="VAAL", 
+                    choices=["RandomSampling", 
+                             "LeastConfidence", 
+                             "MarginSampling", 
+                             "EntropySampling", 
+                             "LeastConfidenceDropout", 
+                             "MarginSamplingDropout", 
+                             "EntropySamplingDropout", 
+                             "KMeansSampling",
+                             "KCenterGreedy", 
+                             "BALDDropout", 
+                             "VAAL"], help="query strategy")
+
+    # VAAL related 
+    parser.add_argument('--latent_dim', type=int, default=32, help='The dimensionality of the VAE latent dimension')
     parser.add_argument('--beta', type=float, default=1, help='Hyperparameter for training. The parameter for VAE')
     parser.add_argument('--num_adv_steps', type=int, default=1, help='Number of adversary steps taken for every task model step')
     parser.add_argument('--num_vae_steps', type=int, default=2, help='Number of VAE steps taken for every task model step')
     parser.add_argument('--adversary_param', type=float, default=1, help='Hyperparameter for training. lambda2 in the paper')
+
+
+    # the actual task related
+    parser.add_argument('--epochs', '-e', metavar='E', type=int, default=5, help='Number of epochs')
+    parser.add_argument('--batch-size', '-b', dest='batch_size', metavar='B', type=int, default=1, help='Batch size')
+    parser.add_argument('--learning-rate', '-l', metavar='LR', type=float, default=1e-5,
+                        help='Learning rate', dest='lr')
+    parser.add_argument('--load', '-f', type=str, default=False, help='Load model from a .pth file')
+    parser.add_argument('--validation', '-v', dest='val', type=float, default=10.0,
+                        help='Percent of the data that is used as validation (0-100)')
+    parser.add_argument('--amp', action='store_true', default=False, help='Use mixed precision')
+    parser.add_argument('--bilinear', action='store_true', default=False, help='Use bilinear upsampling')
+    parser.add_argument('--classes', '-c', type=int, default=5, help='Number of classes')
+    parser.add_argument('--initial_budget', type=float, default=0.2, help='the percentage of number of initial samples in the budget')
+    parser.add_argument('--expanded_budget', type=float, default=0, help='the percentage of number of added samples in the initial budget')
+    parser.add_argument('--resize', type=int, default=0, help='fix_resize')
+    parser.add_argument('--scale', type=str, default= "0.5,0.5", help='scale the image')
+    parser.add_argument('--expt', type =str , default= 'Expt',
+                    help='experiment name')
+
+
+
+    # save and log related 
     parser.add_argument('--out_path', type=str, default='./results', help='Path to where the output log will be')
     parser.add_argument('--log_name', type=str, default='accuracies.log', help='Final performance of the models will be saved with this name')
+
+    
     args = parser.parse_args()
 
     if not os.path.exists(args.out_path):
