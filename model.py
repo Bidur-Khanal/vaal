@@ -20,7 +20,13 @@ class VAE(nn.Module):
         self.z_dim = z_dim
         self.nc = nc
         self.encoder = nn.Sequential(
-            nn.Conv2d(nc, 128, 4, 2, 1, bias=False),              # B,  128, 32, 32
+            nn.Conv2d(nc, 32, 4, 2, 1, bias=False),              # B,  32, 128, 128
+            nn.BatchNorm2d(32),
+            nn.ReLU(True),
+            nn.Conv2d(32, 64, 4, 2, 1, bias=False),              # B,  64, 64, 64
+            nn.BatchNorm2d(64),
+            nn.ReLU(True),
+            nn.Conv2d(64, 128, 4, 2, 1, bias=False),              # B,  128, 32, 32
             nn.BatchNorm2d(128),
             nn.ReLU(True),
             nn.Conv2d(128, 256, 4, 2, 1, bias=False),             # B,  256, 16, 16
@@ -32,24 +38,33 @@ class VAE(nn.Module):
             nn.Conv2d(512, 1024, 4, 2, 1, bias=False),            # B, 1024,  4,  4
             nn.BatchNorm2d(1024),
             nn.ReLU(True),
-            View((-1, 1024*2*2)),                                 # B, 1024*4*4
+            View((-1, 1024*4*4)),                                 # B, 1024*4*4
         )
 
-        self.fc_mu = nn.Linear(1024*2*2, z_dim)                            # B, z_dim
-        self.fc_logvar = nn.Linear(1024*2*2, z_dim)                            # B, z_dim
+        self.fc_mu = nn.Linear(1024*4*4, z_dim)                            # B, z_dim
+        self.fc_logvar = nn.Linear(1024*4*4, z_dim)                            # B, z_dim
         self.decoder = nn.Sequential(
-            nn.Linear(z_dim, 1024*4*4),                           # B, 1024*8*8
-            View((-1, 1024, 4, 4)),                               # B, 1024,  8,  8
-            nn.ConvTranspose2d(1024, 512, 4, 2, 1, bias=False),   # B,  512, 16, 16
+            nn.Linear(z_dim, 1024*4*4),                           # B, 1024*4*4
+            View((-1, 1024, 4, 4)),                               # B, 1024,  4,  4
+            nn.ConvTranspose2d(1024, 512, 4, 2, 1, bias=False),   # B,  512, 8, 8
             nn.BatchNorm2d(512),
             nn.ReLU(True),
-            nn.ConvTranspose2d(512, 256, 4, 2, 1, bias=False),    # B,  256, 32, 32
+            nn.ConvTranspose2d(512, 256, 4, 2, 1, bias=False),    # B,  256, 16, 16
             nn.BatchNorm2d(256),
             nn.ReLU(True),
-            nn.ConvTranspose2d(256, 128, 4, 2, 1, bias=False),    # B,  128, 64, 64
+            nn.ConvTranspose2d(256, 128, 4, 2, 1, bias=False),    # B,  128, 32, 32
             nn.BatchNorm2d(128),
             nn.ReLU(True),
-            nn.ConvTranspose2d(128, nc, 1),                       # B,   nc, 64, 64
+            nn.ConvTranspose2d(128, 64, 4, 2, 1, bias=False),    # B,  64, 64, 64
+            nn.BatchNorm2d(64),
+            nn.ReLU(True),
+            nn.ConvTranspose2d(64, 32, 4, 2, 1, bias=False),    # B,  32, 128, 128
+            nn.BatchNorm2d(32),
+            nn.ReLU(True),
+            nn.ConvTranspose2d(32, 16, 4, 2, 1, bias=False),    # B,   16, 256, 256
+            nn.BatchNorm2d(16),
+            nn.ReLU(True),    
+            nn.ConvTranspose2d(16, nc, 1)                       # B,   nc, 256, 256
         )
         self.weight_init()
 
@@ -66,6 +81,7 @@ class VAE(nn.Module):
         mu, logvar = self.fc_mu(z), self.fc_logvar(z)
         z = self.reparameterize(mu, logvar)
         x_recon = self._decode(z)
+        
 
         return x_recon, z, mu, logvar
 

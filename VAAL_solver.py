@@ -36,8 +36,11 @@ class VAAL_Solver:
                     yield img
 
 
-    def train(self, querry_dataloader, val_dataloader, vae, discriminator, unlabeled_dataloader):
-        self.args.train_iterations = (self.args.num_images * self.args.train_epochs) // self.args.batch_size
+    def train(self, current_split, querry_dataloader, val_dataloader, vae, discriminator, unlabeled_dataloader):
+        #self.args.train_iterations = (self.args.num_images * self.args.train_epochs) // self.args.batch_size
+        self.args.train_iterations = int(((self.args.budget*current_split+ self.args.initial_budget) * self.args.query_train_epochs)/self.args.batch_size)
+        print(self.args.train_iterations)
+
         lr_change = self.args.train_iterations // 4
         labeled_data = self.read_data(querry_dataloader)
         unlabeled_data = self.read_data(unlabeled_dataloader, labels=False)
@@ -54,10 +57,10 @@ class VAAL_Solver:
         discriminator.train()
         #task_model.train()
 
-        if self.args.cuda:
-            vae = vae.to(self.device)
-            discriminator = discriminator.to(self.device)
-            #task_model = task_model.cuda()
+        
+        vae = vae.to(self.device)
+        discriminator = discriminator.to(self.device)
+        #task_model = task_model.cuda()
         
         best_acc = 0
         for iter_count in range(self.args.train_iterations):
@@ -67,10 +70,10 @@ class VAAL_Solver:
             labeled_imgs, labels = next(labeled_data)
             unlabeled_imgs = next(unlabeled_data)
 
-            if self.args.cuda:
-                labeled_imgs = labeled_imgs.to(self.args.device)
-                unlabeled_imgs = unlabeled_imgs.to(self.args.device)
-                labels = labels.cuda()
+           
+            labeled_imgs = labeled_imgs.to(self.args.device)
+            unlabeled_imgs = unlabeled_imgs.to(self.args.device)
+            labels = labels.to(self.args.device)
 
             # task_model step
             #preds = task_model(labeled_imgs)
@@ -93,12 +96,13 @@ class VAAL_Solver:
                 lab_real_preds = torch.ones(labeled_imgs.size(0))
                 unlab_real_preds = torch.ones(unlabeled_imgs.size(0))
                     
-                if self.args.cuda:
-                    lab_real_preds = lab_real_preds.cuda()
-                    unlab_real_preds = unlab_real_preds.cuda()
 
-                dsc_loss = self.bce_loss(labeled_preds, lab_real_preds) + \
-                        self.bce_loss(unlabeled_preds, unlab_real_preds)
+                lab_real_preds = lab_real_preds.to(self.args.device)
+                unlab_real_preds = unlab_real_preds.to(self.args.device)
+
+
+                dsc_loss = self.bce_loss(labeled_preds[:,0], lab_real_preds) + \
+                        self.bce_loss(unlabeled_preds[:,0], unlab_real_preds)
                 total_vae_loss = unsup_loss + transductive_loss + self.args.adversary_param * dsc_loss
                 optim_vae.zero_grad()
                 total_vae_loss.backward()
@@ -109,10 +113,9 @@ class VAAL_Solver:
                     labeled_imgs, _ = next(labeled_data)
                     unlabeled_imgs = next(unlabeled_data)
 
-                    if self.args.cuda:
-                        labeled_imgs = labeled_imgs.cuda()
-                        unlabeled_imgs = unlabeled_imgs.cuda()
-                        labels = labels.cuda()
+                    labeled_imgs = labeled_imgs.to(self.args.device)
+                    unlabeled_imgs = unlabeled_imgs.to(self.args.device)
+                    labels = labels.to(self.args.device)
 
             # Discriminator step
             for count in range(self.args.num_adv_steps):
@@ -126,12 +129,12 @@ class VAAL_Solver:
                 lab_real_preds = torch.ones(labeled_imgs.size(0))
                 unlab_fake_preds = torch.zeros(unlabeled_imgs.size(0))
 
-                if self.args.cuda:
-                    lab_real_preds = lab_real_preds.cuda()
-                    unlab_fake_preds = unlab_fake_preds.cuda()
                 
-                dsc_loss = self.bce_loss(labeled_preds, lab_real_preds) + \
-                        self.bce_loss(unlabeled_preds, unlab_fake_preds)
+                lab_real_preds = lab_real_preds.to(self.args.device)
+                unlab_fake_preds = unlab_fake_preds.to(self.args.device)
+                
+                dsc_loss = self.bce_loss(labeled_preds[:,0], lab_real_preds) + \
+                        self.bce_loss(unlabeled_preds[:,0], unlab_fake_preds)
 
                 optim_discriminator.zero_grad()
                 dsc_loss.backward()
@@ -142,14 +145,14 @@ class VAAL_Solver:
                     labeled_imgs, _ = next(labeled_data)
                     unlabeled_imgs = next(unlabeled_data)
 
-                    if self.args.cuda:
-                        labeled_imgs = labeled_imgs.cuda()
-                        unlabeled_imgs = unlabeled_imgs.cuda()
-                        labels = labels.cuda()
+                    
+                    labeled_imgs = labeled_imgs.to(self.args.device)
+                    unlabeled_imgs = unlabeled_imgs.to(self.args.device)
+                    labels = labels.to(self.args.device)
 
                 
 
-            if iter_count % 100 == 0:
+            if iter_count % 1000 == 0:
                 #print('Current training iteration: {}'.format(iter_count))
                 #print('Current task model loss: {:.4f}'.format(task_loss.item()))
                 print('Current vae model loss: {:.4f}'.format(total_vae_loss.item()))
@@ -181,36 +184,6 @@ class VAAL_Solver:
 
         return querry_indices
                 
-
-    def validate(self, task_model, loader):
-        task_model.eval()
-        total, correct = 0, 0
-        for imgs, labels, _ in loader:
-            if self.args.cuda:
-                imgs = imgs.cuda()
-
-            with torch.no_grad():
-                preds = task_model(imgs)
-
-            preds = torch.argmax(preds, dim=1).cpu().numpy()
-            correct += accuracy_score(labels, preds, normalize=False)
-            total += imgs.size(0)
-        return correct / total * 100
-
-    def test(self, task_model):
-        task_model.eval()
-        total, correct = 0, 0
-        for imgs, labels in self.test_dataloader:
-            if self.args.cuda:
-                imgs = imgs.cuda()
-
-            with torch.no_grad():
-                preds = task_model(imgs)
-
-            preds = torch.argmax(preds, dim=1).cpu().numpy()
-            correct += accuracy_score(labels, preds, normalize=False)
-            total += imgs.size(0)
-        return correct / total * 100
 
 
     def vae_loss(self, x, recon, mu, logvar, beta):

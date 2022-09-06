@@ -19,12 +19,12 @@ import warnings
 warnings.filterwarnings("ignore")
 
 
-def train_task(args,net, train_loader, val_loader,
+def train_task(args,net, train_loader, val_loader, test_loader,
               epochs: int = 5,
               batch_size: int = 1,
               learning_rate: float = 1e-5,
               save_checkpoint: bool = True,
-              amp: bool = False):
+              amp: bool = False, wandb_log = None):
 
 
     dir_checkpoint = Path('./checkpoints/')
@@ -32,7 +32,7 @@ def train_task(args,net, train_loader, val_loader,
     if min(scale) == 0:
         scale = None
 
-    
+    best_val_dice = 0.
     # (Initialize logging)
     # experiment = wandb.init(project='U-Net-active-learning')
     # experiment.config.update(vars(args))
@@ -75,40 +75,45 @@ def train_task(args,net, train_loader, val_loader,
                 pbar.update(images.shape[0])
                 global_step += 1
                 epoch_loss += loss.item()
-                # experiment.log({
-                #     'train loss': loss.item(),
-                #     'step': global_step,
-                #     'epoch': epoch
-                # })
+                wandb.log({
+                    'train loss': loss.item(),
+                    'step': global_step,
+                    'epoch': epoch
+                })
                 pbar.set_postfix(**{'loss (batch)': loss.item()})
 
-        #### Evaluation round
+        ### Evaluation round
         
-        # histograms = {}
-        # for tag, value in net.named_parameters():
-        #     tag = tag.replace('/', '.')
-        #     histograms['Weights/' + tag] = wandb.Histogram(value.data.cpu())
-        #     histograms['Gradients/' + tag] = wandb.Histogram(value.grad.data.cpu())
+        histograms = {}
+        for tag, value in net.named_parameters():
+            tag = tag.replace('/', '.')
+            histograms['Weights/' + tag] = wandb.Histogram(value.data.cpu())
+            histograms['Gradients/' + tag] = wandb.Histogram(value.grad.data.cpu())
 
         val_score = evaluate(net, val_loader, args.device)
         scheduler.step(val_score)
 
         logging.info('Validation Dice score: {}'.format(val_score))
-        # experiment.log({
-        #     'learning rate': optimizer.param_groups[0]['lr'],
-        #     'validation Dice': val_score,
-        #     'images': wandb.Image(images[0].cpu()),
-        #     'masks': {
-        #         'true': wandb.Image(true_masks[0].float().cpu()),
-        #         'pred': wandb.Image(masks_pred.argmax(dim=1)[0].float().cpu()),
-        #     },
-        #     'step': global_step,
-        #     'epoch': epoch,
-        #     **histograms
-        # })       
+        wandb_log.log({
+            'learning rate': optimizer.param_groups[0]['lr'],
+            'validation Dice': val_score,
+            'images': wandb.Image(images[0].cpu()),
+            'masks': {
+                'true': wandb.Image(true_masks[0].float().cpu()),
+                'pred': wandb.Image(masks_pred.argmax(dim=1)[0].float().cpu()),
+            },
+            'step': global_step,
+            'epoch': epoch,
+            **histograms
+        })       
 
-        if save_checkpoint:
-            if epoch%5 == 0:
+        if best_val_dice < val_score:
+            if save_checkpoint:
                 Path(str(dir_checkpoint)+'/'+args.expt).mkdir(parents=True, exist_ok=True)
-                torch.save(net.state_dict(), str(dir_checkpoint)+'/'+args.expt + '/'+ 'checkpoint_epoch{}.pth'.format(epoch))
+                torch.save(net.state_dict(), str(dir_checkpoint)+'/'+args.expt + '/'+ 'checkpoint.pth')
                 logging.info(f'Checkpoint {epoch} saved!')
+
+    # net.load_state_dict(torch.load(str(dir_checkpoint)+'/'+args.expt + '/'+ 'checkpoint.pth'))
+    # test_score = evaluate(net, test_loader, args.device)
+    # wandb_log.log({'test Dice': test_score})
+    

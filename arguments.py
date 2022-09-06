@@ -7,8 +7,8 @@ def get_args():
     # general training related 
     parser.add_argument('--gpu_id', type =str , default= '0',help='select a gpu id')
     parser.add_argument('--dataset', type=str, default='liver-seg', help='Name of the dataset used.')
-    parser.add_argument('--batch_size', type=int, default=128, help='Batch size used for training and testing')
-    parser.add_argument('--train_epochs', type=int, default=100, help='Number of training epochs')
+    parser.add_argument('--batch_size', type=int, default=8, help='Batch size used for training and testing')
+    parser.add_argument('--query_train_epochs', type=int, default=100, help='Number of training epochs')
     parser.add_argument('--data_path', type=str, default='./data', help='Path to where the data is')
     parser.add_argument('--seed', type=int, default=0, help='use a random seed')
     
@@ -29,16 +29,15 @@ def get_args():
                              "VAAL"], help="query strategy")
 
     # VAAL related 
-    parser.add_argument('--latent_dim', type=int, default=32, help='The dimensionality of the VAE latent dimension')
+    parser.add_argument('--latent_dim', type=int, default=64, help='The dimensionality of the VAE latent dimension')
     parser.add_argument('--beta', type=float, default=1, help='Hyperparameter for training. The parameter for VAE')
     parser.add_argument('--num_adv_steps', type=int, default=1, help='Number of adversary steps taken for every task model step')
     parser.add_argument('--num_vae_steps', type=int, default=2, help='Number of VAE steps taken for every task model step')
-    parser.add_argument('--adversary_param', type=float, default=1, help='Hyperparameter for training. lambda2 in the paper')
+    parser.add_argument('--adversary_param', type=float, default=10, help='Hyperparameter for training. lambda2 in the paper')
 
 
     # the actual task related
-    parser.add_argument('--epochs', '-e', metavar='E', type=int, default=5, help='Number of epochs')
-    parser.add_argument('--batch-size', '-b', dest='batch_size', metavar='B', type=int, default=1, help='Batch size')
+    parser.add_argument('--epochs', '-e', metavar='E', type=int, default=1, help='Number of epochs')
     parser.add_argument('--learning-rate', '-l', metavar='LR', type=float, default=1e-5,
                         help='Learning rate', dest='lr')
     parser.add_argument('--load', '-f', type=str, default=False, help='Load model from a .pth file')
