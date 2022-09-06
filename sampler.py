@@ -7,13 +7,11 @@ class AdversarySampler:
         self.budget = budget
 
 
-    def sample(self, vae, discriminator, data, cuda):
+    def sample(self, vae, discriminator, data, unlabeled_indices, device):
         all_preds = []
-        all_indices = []
 
-        for images, _, indices in data:
-            if cuda:
-                images = images.cuda()
+        for images, _,_  in data:
+            images = images.to(device)
 
             with torch.no_grad():
                 _, _, mu, _ = vae(images)
@@ -21,7 +19,7 @@ class AdversarySampler:
 
             preds = preds.cpu().data
             all_preds.extend(preds)
-            all_indices.extend(indices)
+          
 
         all_preds = torch.stack(all_preds)
         all_preds = all_preds.view(-1)
@@ -30,7 +28,7 @@ class AdversarySampler:
 
         # select the points which the discriminator thinks are the most likely to be unlabeled
         _, querry_indices = torch.topk(all_preds, int(self.budget))
-        querry_pool_indices = np.asarray(all_indices)[querry_indices]
+        querry_pool_indices = list(np.asarray(unlabeled_indices)[querry_indices])
 
         return querry_pool_indices
 

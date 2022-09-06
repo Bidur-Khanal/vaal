@@ -71,9 +71,9 @@ def main(args):
     all_indices = np.setdiff1d(list(all_indices), val_indices)
 
 
-    initial_indices = random.sample(list(all_indices), args.initial_budget)[0:50]
+    initial_indices = random.sample(list(all_indices), args.initial_budget)
     sampler = data.sampler.SubsetRandomSampler(initial_indices)
-    val_sampler = data.sampler.SubsetRandomSampler(val_indices[0:50])
+    val_sampler = data.sampler.SubsetRandomSampler(val_indices)
 
     # dataset with labels available
     querry_dataloader = data.DataLoader(train_dataset, sampler=sampler, 
@@ -129,12 +129,14 @@ def main(args):
                                                 vae, 
                                                 discriminator,
                                                 unlabeled_dataloader)
-            sampled_indices = solver.sample_for_labeling(vae, discriminator, unlabeled_dataloader)
+            sampled_indices = solver.sample_for_labeling(vae, discriminator, unlabeled_dataloader, unlabeled_indices)
 
         elif args.method == "RandomSampling":
             random.shuffle(unlabeled_indices)
             arg = np.random.randint(len(unlabeled_indices), size=len(unlabeled_indices))
             sampled_indices = unlabeled_indices[arg][:args.budget]
+
+        
 
         current_indices = list(current_indices) + list(sampled_indices)
         sampler = data.sampler.SubsetRandomSampler(current_indices)

@@ -39,9 +39,8 @@ class VAAL_Solver:
     def train(self, current_split, querry_dataloader, val_dataloader, vae, discriminator, unlabeled_dataloader):
         #self.args.train_iterations = (self.args.num_images * self.args.train_epochs) // self.args.batch_size
         self.args.train_iterations = int(((self.args.budget*current_split+ self.args.initial_budget) * self.args.query_train_epochs)/self.args.batch_size)
-        print(self.args.train_iterations)
-
-        lr_change = self.args.train_iterations // 4
+        
+        
         labeled_data = self.read_data(querry_dataloader)
         unlabeled_data = self.read_data(unlabeled_dataloader, labels=False)
 
@@ -176,11 +175,12 @@ class VAAL_Solver:
         return vae, discriminator
 
 
-    def sample_for_labeling(self, vae, discriminator, unlabeled_dataloader):
+    def sample_for_labeling(self, vae, discriminator, unlabeled_dataloader, unlabeled_indices):
+       
         querry_indices = self.sampler.sample(vae, 
                                              discriminator, 
-                                             unlabeled_dataloader, 
-                                             self.args.cuda)
+                                             unlabeled_dataloader, unlabeled_indices,
+                                             self.args.device)
 
         return querry_indices
                 
