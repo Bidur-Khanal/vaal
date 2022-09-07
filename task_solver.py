@@ -113,7 +113,7 @@ def train_task(args,net, train_loader, val_loader, test_loader,
                 torch.save(net.state_dict(), str(dir_checkpoint)+'/'+args.expt + '/'+ 'checkpoint.pth')
                 logging.info(f'Checkpoint {epoch} saved!')
 
-    # net.load_state_dict(torch.load(str(dir_checkpoint)+'/'+args.expt + '/'+ 'checkpoint.pth'))
-    # test_score = evaluate(net, test_loader, args.device)
-    # wandb_log.log({'test Dice': test_score})
+    net.load_state_dict(torch.load(str(dir_checkpoint)+'/'+args.expt + '/'+ 'checkpoint.pth'))
+    test_score = evaluate(net, test_loader, args.device)
+    wandb_log.log({'test Dice': test_score})
     
