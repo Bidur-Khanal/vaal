@@ -108,10 +108,12 @@ def train_task(args,net, train_loader, val_loader, test_loader,
         })       
 
         if best_val_dice < val_score:
+            best_val_dice = val_score
             if save_checkpoint:
                 Path(str(dir_checkpoint)+'/'+args.expt).mkdir(parents=True, exist_ok=True)
                 torch.save(net.state_dict(), str(dir_checkpoint)+'/'+args.expt + '/'+ 'checkpoint.pth')
                 logging.info(f'Checkpoint {epoch} saved!')
+            
 
     net.load_state_dict(torch.load(str(dir_checkpoint)+'/'+args.expt + '/'+ 'checkpoint.pth'))
     test_score = evaluate(net, test_loader, args.device)
