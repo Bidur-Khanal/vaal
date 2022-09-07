@@ -24,7 +24,7 @@ def train_task(args,net, train_loader, val_loader, test_loader,
               batch_size: int = 1,
               learning_rate: float = 1e-5,
               save_checkpoint: bool = True,
-              amp: bool = False, wandb_log = None):
+              amp: bool = False, wandb_log = None, split = 1):
 
 
     dir_checkpoint = Path('./checkpoints/')
@@ -111,11 +111,11 @@ def train_task(args,net, train_loader, val_loader, test_loader,
             best_val_dice = val_score
             if save_checkpoint:
                 Path(str(dir_checkpoint)+'/'+args.expt).mkdir(parents=True, exist_ok=True)
-                torch.save(net.state_dict(), str(dir_checkpoint)+'/'+args.expt + '/'+ 'checkpoint.pth')
+                torch.save(net.state_dict(), str(dir_checkpoint)+'/'+args.expt + '/'+ 'checkpoint'+str(split)+'.pth')
                 logging.info(f'Checkpoint {epoch} saved!')
             
 
-    net.load_state_dict(torch.load(str(dir_checkpoint)+'/'+args.expt + '/'+ 'checkpoint.pth'))
+    net.load_state_dict(torch.load(str(dir_checkpoint)+'/'+args.expt + '/'+ 'checkpoint'+str(split)+'.pth'))
     test_score = evaluate(net, test_loader, args.device)
     wandb_log.log({'test Dice': test_score})
     

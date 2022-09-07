@@ -108,7 +108,7 @@ def main(args):
                   epochs=args.epochs,
                   batch_size=args.batch_size,
                   learning_rate=args.lr,
-                  amp=args.amp, wandb_log= experiment)
+                  amp=args.amp, wandb_log= experiment, split = split)
 
 
         ## all unlabeled train samples
