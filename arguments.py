@@ -37,7 +37,7 @@ def get_args():
 
 
     # the actual task related
-    parser.add_argument('--epochs', '-e', metavar='E', type=int, default=20, help='Number of epochs')
+    parser.add_argument('--epochs', '-e', metavar='E', type=int, default=50, help='Number of epochs')
     parser.add_argument('--learning-rate', '-l', metavar='LR', type=float, default=1e-5,
                         help='Learning rate', dest='lr')
     parser.add_argument('--validation', '-v', dest='val', type=float, default=10.0,
