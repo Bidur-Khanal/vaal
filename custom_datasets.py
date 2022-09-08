@@ -16,7 +16,7 @@ import pdb
 class LiverSegDataset(Dataset):
 
 
-    def __init__(self, root_dir, train = True, flip=False, resize = None, scale= None, crop=None):
+    def __init__(self, root_dir, train = True, flip=False, resize = None, scale= None, crop=None, train_pth_file = 'train_files.npy', test_pth_file = 'test_files.npy'):
 
         # Based on https://github.com/mcordts/cityscapesScripts
         Seg_classes = namedtuple('Class', ['name', 'train_id','color', 'color_name'])
@@ -58,13 +58,13 @@ class LiverSegDataset(Dataset):
       
        
         if train:
-            train_files = (numpy.load('train_files.npy', allow_pickle='TRUE')).item()
+            train_files = (numpy.load(train_pth_file, allow_pickle='TRUE')).item()
             self.image_files = train_files['images'].tolist()
             self.mask_files = train_files['masks'].tolist()
             self.depth_files = train_files['depths'].tolist()
 
         else:
-            test_files = (numpy.load('test_files.npy', allow_pickle='TRUE')).item()
+            test_files = (numpy.load(test_pth_file, allow_pickle='TRUE')).item()
             self.image_files = test_files['images'].tolist()
             self.mask_files = test_files['masks'].tolist()
             self.depth_files = test_files['depths'].tolist()

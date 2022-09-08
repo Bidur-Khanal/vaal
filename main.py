@@ -61,12 +61,34 @@ def main(args):
 
         train_dataset =  LiverSegDataset("/home/bidur/vaal/data/liver_seg_dataset", scale = scale, flip = True, resize= args.resize)
         test_dataset =  LiverSegDataset("/home/bidur/vaal/data/liver_seg_dataset", train = False, scale = scale, flip = True, resize= args.resize)
-
+        
         args.num_val = 1890
         args.num_images = 18900
         args.budget = 850
         args.initial_budget = 850
         args.num_classes = 5
+
+    elif args.dataset == 'liver-seg-small':
+        
+        test_dataloader = data.DataLoader(
+                datasets.ImageFolder(args.data_path, transform=imagenet_transformer()),
+            drop_last=False, batch_size=args.batch_size)
+
+        scale = tuple(float(i) for i in args.scale.split(","))
+        if min(scale) == 0:
+            scale = None
+
+        train_dataset =  LiverSegDataset("/home/bidur/vaal/data/liver_seg_dataset", scale = scale, flip = True, resize= args.resize, train_pth_file= 'train_files_curated.npy')
+        test_dataset =  LiverSegDataset("/home/bidur/vaal/data/liver_seg_dataset", train = False, scale = scale, flip = True, resize= args.resize, test_pth_file= "test_files_curated.npy")
+
+        args.num_val = 500
+        args.num_images = 2000
+        args.budget = 100
+        args.initial_budget = 200
+        args.num_classes = 5
+
+
+        
 
     else:
         raise NotImplementedError
