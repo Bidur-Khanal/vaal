@@ -20,6 +20,16 @@ from task_solver import train_task
 import wandb
 
 
+## Set Seed
+def fix_seed(seed):
+    # random
+    random.seed(seed)
+    # Numpy
+    np.random.seed(seed)
+    # Pytorch
+    torch.manual_seed(seed)
+
+fix_seed(0)
 
 def main(args):
 
@@ -67,11 +77,11 @@ def main(args):
 
     all_indices = set(np.arange(args.num_images))
     random.seed(args.seed)  #every time set the same seed
-    val_indices = random.sample(all_indices, args.num_val)
+    val_indices = random.sample(all_indices, args.num_val)[0:50]
     all_indices = np.setdiff1d(list(all_indices), val_indices)
 
 
-    initial_indices = random.sample(list(all_indices), args.initial_budget)
+    initial_indices = random.sample(list(all_indices), args.initial_budget)[0:50]
     sampler = data.sampler.SubsetRandomSampler(initial_indices)
     val_sampler = data.sampler.SubsetRandomSampler(val_indices)
 
@@ -89,7 +99,7 @@ def main(args):
     solver = VAAL_Solver(args, test_dataloader)
 
     splits = [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4]
-
+    
     current_indices = list(initial_indices)
     for i, split in enumerate(splits):
 
@@ -135,8 +145,7 @@ def main(args):
             random.shuffle(unlabeled_indices)
             arg = np.random.randint(len(unlabeled_indices), size=len(unlabeled_indices))
             sampled_indices = unlabeled_indices[arg][:args.budget]
-
-        
+          
 
         current_indices = list(current_indices) + list(sampled_indices)
         sampler = data.sampler.SubsetRandomSampler(current_indices)
