@@ -37,7 +37,7 @@ class VAAL_Solver:
 
 
     def train(self, current_split, querry_dataloader, val_dataloader, vae, discriminator, unlabeled_dataloader):
-        self.args.train_iterations = (5000 * self.args.query_train_epochs) // self.args.batch_size
+        self.args.train_iterations = (self.args.num_images* self.args.query_train_epochs) // self.args.batch_size
         #self.args.train_iterations = int(((self.args.budget*current_split+ self.args.initial_budget) * self.args.query_train_epochs)/self.args.batch_size)
         
         
