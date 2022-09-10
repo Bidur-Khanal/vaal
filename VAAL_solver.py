@@ -44,8 +44,8 @@ class VAAL_Solver:
         labeled_data = self.read_data(querry_dataloader)
         unlabeled_data = self.read_data(unlabeled_dataloader, labels=False)
 
-        optim_vae = optim.Adam(vae.parameters(), lr=5e-4)
-        optim_discriminator = optim.Adam(discriminator.parameters(), lr=5e-4)
+        optim_vae = optim.Adam(vae.parameters(), lr=self.args.alpha1)
+        optim_discriminator = optim.Adam(discriminator.parameters(), lr=self.args.alpha2)
         
         #optim_task_model = optim.SGD(task_model.parameters(), lr=0.01, weight_decay=5e-4, momentum=0.9)
 
