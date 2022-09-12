@@ -155,6 +155,9 @@ def main(args):
             vae = model.VAE(args.latent_dim)
             discriminator = model.Discriminator(args.latent_dim)
 
+            vae = vae.to(device = args.device)
+            discriminator = discriminator.to(device = args.device)
+
             # train the models on the current data
             vae, discriminator = solver.train(split,querry_dataloader,
                                                 val_dataloader,
