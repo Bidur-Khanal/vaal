@@ -22,7 +22,7 @@ class multi_modal_VAAL_Solver:
         self.mse_loss = nn.MSELoss()
         self.ce_loss = nn.CrossEntropyLoss()
 
-        self.sampler = sampler.AdversarySampler(self.args.budget)
+        self.sampler = sampler.AdversarySampler_multimodal(self.args.budget)
 
 
     def read_data(self, dataloader, labels=True):
@@ -121,7 +121,7 @@ class multi_modal_VAAL_Solver:
                     labeled_depths = labeled_depths.to(self.args.device)
                     unlabeled_imgs = unlabeled_imgs.to(self.args.device)
                     unlabeled_depths = unlabeled_depths.to(self.args.device)
-                    labels = labels.to(self.args.device)
+                    #labels = labels.to(self.args.device)
 
             # Discriminator step
             for count in range(self.args.num_adv_steps):
@@ -148,13 +148,14 @@ class multi_modal_VAAL_Solver:
 
                 # sample new batch if needed to train the adversarial network
                 if count < (self.args.num_adv_steps - 1):
-                    labeled_imgs, _ = next(labeled_data)
-                    unlabeled_imgs = next(unlabeled_data)
+                    labeled_imgs, labeled_depths, _ = next(labeled_data)
+                    unlabeled_imgs, unlabeled_depths = next(unlabeled_data)
 
-                    
                     labeled_imgs = labeled_imgs.to(self.args.device)
+                    labeled_depths = labeled_depths.to(self.args.device)
                     unlabeled_imgs = unlabeled_imgs.to(self.args.device)
-                    labels = labels.to(self.args.device)
+                    unlabeled_depths = unlabeled_depths.to(self.args.device)
+                    #labels = labels.to(self.args.device)
 
                 
 
