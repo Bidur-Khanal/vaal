@@ -26,7 +26,8 @@ def get_args():
                              "KMeansSampling",
                              "KCenterGreedy", 
                              "BALDDropout", 
-                             "VAAL"], help="query strategy")
+                             "VAAL",
+                             "multimodal_VAAL"], help="query strategy")
 
     # VAAL related 
     parser.add_argument('--latent_dim', type=int, default=64, help='The dimensionality of the VAE latent dimension')
@@ -36,6 +37,9 @@ def get_args():
     parser.add_argument('--num_adv_steps', type=int, default=1, help='Number of adversary steps taken for every task model step')
     parser.add_argument('--num_vae_steps', type=int, default=2, help='Number of VAE steps taken for every task model step')
     parser.add_argument('--adversary_param', type=float, default=10, help='Hyperparameter for training. lambda2 in the paper')
+    parser.add_argument('--mse_gamma1', type=float, default=1, help='Hyperparameter for training. Weight of RGB reconstriction error')
+    parser.add_argument('--mse_gamma2', type=float, default=1, help='Hyperparameter for training. Weight of depth reconstruciton error')
+
 
 
     # the actual task related
@@ -48,7 +52,7 @@ def get_args():
     parser.add_argument('--bilinear', action='store_true', default=False, help='Use bilinear upsampling')
     parser.add_argument('--classes', '-c', type=int, default=5, help='Number of classes')
     parser.add_argument('--resize', type=int, default=0, help='fix_resize')
-    parser.add_argument('--scale', type=str, default= "0.5,0.5", help='scale the image')
+    parser.add_argument('--scale', type=str, default= "0,0", help='scale the image')
     parser.add_argument('--expt', type =str , default= 'Expt',
                     help='experiment name')
 

@@ -114,7 +114,7 @@ class VAAL_Solver:
 
                     labeled_imgs = labeled_imgs.to(self.args.device)
                     unlabeled_imgs = unlabeled_imgs.to(self.args.device)
-                    labels = labels.to(self.args.device)
+                    #labels = labels.to(self.args.device)
 
             # Discriminator step
             for count in range(self.args.num_adv_steps):
@@ -147,7 +147,7 @@ class VAAL_Solver:
                     
                     labeled_imgs = labeled_imgs.to(self.args.device)
                     unlabeled_imgs = unlabeled_imgs.to(self.args.device)
-                    labels = labels.to(self.args.device)
+                    #labels = labels.to(self.args.device)
 
                 
 

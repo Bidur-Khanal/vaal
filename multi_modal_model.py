@@ -88,7 +88,7 @@ class VAE(nn.Module):
             nn.ConvTranspose2d(32, 16, 4, 2, 1, bias=False),    # B,   16, 256, 256
             nn.BatchNorm2d(16),
             nn.ReLU(True),    
-            nn.ConvTranspose2d(16, nc, 1)                       # B,   nc, 256, 256
+            nn.ConvTranspose2d(16, 1, 1)                       # B,   1, 256, 256
         )
         
         self.weight_init()
@@ -109,7 +109,7 @@ class VAE(nn.Module):
         x_depth = self._depth_decode(z)
         
 
-        return x_recon, z, mu, logvar
+        return x_recon, x_depth, z, mu, logvar
 
     def reparameterize(self, mu, logvar):
         stds = (0.5 * logvar).exp()

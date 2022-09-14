@@ -1,3 +1,4 @@
+from multimodal_VAAL_solver import multi_modal_VAAL_Solver
 import torch
 from torchvision import datasets, transforms
 import torch.utils.data.sampler  as sampler
@@ -10,6 +11,7 @@ import os
 
 from custom_datasets import *
 import model
+import multi_modal_model
 import vgg
 from VAAL_solver import VAAL_Solver
 from utils import *
@@ -118,7 +120,8 @@ def main(args):
  
             
     args.device = torch.device('cuda:'+args.gpu_id if torch.cuda.is_available() else 'cpu')
-    solver = VAAL_Solver(args, test_dataloader)
+    VAAL_solver = VAAL_Solver(args, test_dataloader)
+    multimodal_VAAL_solver = multi_modal_VAAL_Solver(args,test_dataloader)
 
     splits = [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4]
     
@@ -159,12 +162,30 @@ def main(args):
             discriminator = discriminator.to(device = args.device)
 
             # train the models on the current data
-            vae, discriminator = solver.train(split,querry_dataloader,
+            vae, discriminator = VAAL_solver.train(split,querry_dataloader,
                                                 val_dataloader,
                                                 vae, 
                                                 discriminator,
                                                 unlabeled_dataloader)
-            sampled_indices = solver.sample_for_labeling(vae, discriminator, unlabeled_dataloader, unlabeled_indices)
+            sampled_indices = VAAL_solver.sample_for_labeling(vae, discriminator, unlabeled_dataloader, unlabeled_indices)
+
+
+        elif args.method == 'multimodal_VAAL':
+            #### initilaize the VAAL models
+            vae = multi_modal_model.VAE(args.latent_dim)
+            discriminator = multi_modal_model.Discriminator(args.latent_dim)
+
+            vae = vae.to(device = args.device)
+            discriminator = discriminator.to(device = args.device)
+
+            # train the models on the current data
+            vae, discriminator = multimodal_VAAL_solver.train(split,querry_dataloader,
+                                                val_dataloader,
+                                                vae, 
+                                                discriminator,
+                                                unlabeled_dataloader)
+            sampled_indices = multimodal_VAAL_solver.sample_for_labeling(vae, discriminator, unlabeled_dataloader, unlabeled_indices)
+
 
         elif args.method == "RandomSampling":
             random.shuffle(unlabeled_indices)
