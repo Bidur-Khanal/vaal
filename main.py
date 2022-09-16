@@ -61,8 +61,8 @@ def main(args):
         if min(scale) == 0:
             scale = None
 
-        train_dataset =  LiverSegDataset("/home/bidur/vaal/data/liver_seg_dataset", scale = scale, flip = True, resize= args.resize)
-        test_dataset =  LiverSegDataset("/home/bidur/vaal/data/liver_seg_dataset", train = False, scale = scale, flip = True, resize= args.resize)
+        train_dataset =  LiverSegDataset("/home/bidur/vaal/data/liver_seg_dataset", scale = scale, flip = True, resize= args.resize,train_pth_file = 'train_files.npy', test_pth_file = 'test_files.npy')
+        test_dataset =  LiverSegDataset("/home/bidur/vaal/data/liver_seg_dataset", train = False, scale = scale, flip = True, resize= args.resize,train_pth_file = 'train_files.npy', test_pth_file = 'test_files.npy')
         
         args.num_val = 1890
         args.num_images = 18900
@@ -88,9 +88,7 @@ def main(args):
         args.budget = 100
         args.initial_budget = 200
         args.num_classes = 5
-
-
-        
+   
 
     else:
         raise NotImplementedError
@@ -101,11 +99,11 @@ def main(args):
 
     all_indices = set(np.arange(args.num_images))
     random.seed(args.seed)  #every time set the same seed
-    val_indices = random.sample(all_indices, args.num_val)[0:50]
+    val_indices = random.sample(all_indices, args.num_val)
     all_indices = np.setdiff1d(list(all_indices), val_indices)
 
 
-    initial_indices = random.sample(list(all_indices), args.initial_budget)[0:50]
+    initial_indices = random.sample(list(all_indices), args.initial_budget)
     sampler = data.sampler.SubsetRandomSampler(initial_indices)
     val_sampler = data.sampler.SubsetRandomSampler(val_indices)
 
