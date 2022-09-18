@@ -186,6 +186,7 @@ def main(args):
 
 
         elif args.method == "RandomSampling":
+            random.seed(args.seed)  #every time set the same seed
             random.shuffle(unlabeled_indices)
             arg = np.random.randint(len(unlabeled_indices), size=len(unlabeled_indices))
             sampled_indices = unlabeled_indices[arg][:args.budget]
