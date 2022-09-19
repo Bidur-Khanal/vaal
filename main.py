@@ -20,7 +20,7 @@ from evaluate import evaluate
 from unet import UNet
 from task_solver import train_task
 import wandb
-
+import torch.backends.cudnn as cudnn
 
 ## Set Seed
 def fix_seed(seed):
@@ -30,14 +30,16 @@ def fix_seed(seed):
     np.random.seed(seed)
     # Pytorch
     torch.manual_seed(seed)
+    #cudnn.deterministic = True
 
-fix_seed(0)
+
 
 def main(args):
 
     # (Initialize logging)
     experiment = wandb.init(project='U-Net-active-learning')
     
+    fix_seed(0)
 
     # if args.dataset == 'cifar10':
     #     test_dataloader = data.DataLoader(
@@ -118,8 +120,7 @@ def main(args):
  
             
     args.device = torch.device('cuda:'+args.gpu_id if torch.cuda.is_available() else 'cpu')
-    VAAL_solver = VAAL_Solver(args, test_dataloader)
-    multimodal_VAAL_solver = multi_modal_VAAL_Solver(args,test_dataloader)
+   
 
     splits = [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4]
     
@@ -153,6 +154,7 @@ def main(args):
 
         if args.method == 'VAAL':
             #### initilaize the VAAL models
+            VAAL_solver = VAAL_Solver(args, test_dataloader)
             vae = model.VAE(args.latent_dim)
             discriminator = model.Discriminator(args.latent_dim)
 
@@ -169,7 +171,9 @@ def main(args):
 
 
         elif args.method == 'multimodal_VAAL':
+            
             #### initilaize the VAAL models
+            multimodal_VAAL_solver = multi_modal_VAAL_Solver(args,test_dataloader)
             vae = multi_modal_model.VAE(args.latent_dim)
             discriminator = multi_modal_model.Discriminator(args.latent_dim)
 
