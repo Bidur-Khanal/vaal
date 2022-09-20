@@ -37,8 +37,7 @@ class VAAL_Solver:
 
 
     def train(self, current_split, querry_dataloader, val_dataloader, vae, discriminator, unlabeled_dataloader):
-        self.args.train_iterations = 1
-        #self.args.train_iterations = (self.args.num_images* self.args.query_train_epochs) // self.args.batch_size
+        self.args.train_iterations = (self.args.num_images* self.args.query_train_epochs) // self.args.batch_size
         #self.args.train_iterations = int(((self.args.budget*current_split+ self.args.initial_budget) * self.args.query_train_epochs)/self.args.batch_size)
         
         
@@ -48,25 +47,18 @@ class VAAL_Solver:
         optim_vae = optim.Adam(vae.parameters(), lr=self.args.alpha1)
         optim_discriminator = optim.Adam(discriminator.parameters(), lr=self.args.alpha2)
         
-        #optim_task_model = optim.SGD(task_model.parameters(), lr=0.01, weight_decay=5e-4, momentum=0.9)
-
-        
-
-
+    
         vae.train()
         discriminator.train()
-        #task_model.train()
-
+        
         
         vae = vae.to(self.device)
         discriminator = discriminator.to(self.device)
-        #task_model = task_model.cuda()
         
-        best_acc = 0
+        
+        
         for iter_count in range(self.args.train_iterations):
-            # if iter_count is not 0 and iter_count % lr_change == 0:
-                # for param in optim_task_model.param_groups:
-                #     param['lr'] = param['lr'] / 10
+           
             labeled_imgs, labels = next(labeled_data)
             unlabeled_imgs = next(unlabeled_data)
 
@@ -75,12 +67,6 @@ class VAAL_Solver:
             unlabeled_imgs = unlabeled_imgs.to(self.args.device)
             labels = labels.to(self.args.device)
 
-            # task_model step
-            #preds = task_model(labeled_imgs)
-            #task_loss = self.ce_loss(preds, labels)
-            #optim_task_model.zero_grad()
-            #task_loss.backward()
-            #optim_task_model.step()
 
             # VAE step
             for count in range(self.args.num_vae_steps):
@@ -153,8 +139,7 @@ class VAAL_Solver:
                 
 
             if iter_count % 100 == 0:
-                #print('Current training iteration: {}'.format(iter_count))
-                #print('Current task model loss: {:.4f}'.format(task_loss.item()))
+                
                 print('Current vae model loss: {:.4f}'.format(total_vae_loss.item()))
                 print('Current discriminator model loss: {:.4f}'.format(dsc_loss.item()))
 
