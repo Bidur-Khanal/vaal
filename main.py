@@ -37,7 +37,7 @@ def fix_seed(seed):
 def main(args):
 
     # (Initialize logging)
-    experiment = wandb.init(project='U-Net-active-learning')
+    experiment = wandb.init(project='U-Net-active-learning-final')
     
     # if args.dataset == 'cifar10':
     #     test_dataloader = data.DataLoader(
