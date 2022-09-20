@@ -39,8 +39,6 @@ def main(args):
     # (Initialize logging)
     experiment = wandb.init(project='U-Net-active-learning')
     
-    fix_seed(0)
-
     # if args.dataset == 'cifar10':
     #     test_dataloader = data.DataLoader(
     #             datasets.CIFAR10(args.data_path, download=True, transform=cifar_transformer(), train=False),
@@ -203,5 +201,6 @@ def main(args):
 
 if __name__ == '__main__':
     args = arguments.get_args()
+    fix_seed(0)
     main(args)
 
