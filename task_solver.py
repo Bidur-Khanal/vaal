@@ -83,7 +83,7 @@ def train_task(args,net, train_loader, val_loader, test_loader,
                                     multiclass=True)
 
                 optimizer.zero_grad()
-                optimizer.backward()
+                loss.backward()
                 optimizer.step()
 
                 pbar.update(images.shape[0])
