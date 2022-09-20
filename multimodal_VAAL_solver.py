@@ -5,7 +5,7 @@ import torch.optim as optim
 import os
 import numpy as np
 from sklearn.metrics import accuracy_score
-
+from pathlib import Path
 import sampler
 import copy
 
@@ -21,7 +21,7 @@ class multi_modal_VAAL_Solver:
         self.bce_loss = nn.BCELoss()
         self.mse_loss = nn.MSELoss()
         self.ce_loss = nn.CrossEntropyLoss()
-
+        self.dir_checkpoint = Path('./checkpoints/')
         self.sampler = sampler.AdversarySampler_multimodal(self.args.budget)
 
 
@@ -165,20 +165,10 @@ class multi_modal_VAAL_Solver:
                 print('Current vae model loss: {:.4f}'.format(total_vae_loss.item()))
                 print('Current discriminator model loss: {:.4f}'.format(dsc_loss.item()))
 
-            # if iter_count % 1000 == 0:
-            #     acc = self.validate(task_model, val_dataloader)
-            #     if acc > best_acc:
-            #         best_acc = acc
-            #         best_model = copy.deepcopy(task_model)
-                
-            #     print('current step: {} acc: {}'.format(iter_count, acc))
-            #     print('best acc: ', best_acc)
 
-
-        # if self.args.cuda:
-        #     best_model = best_model.cuda()
-
-        # final_accuracy = self.test(best_model)
+        Path(str(self.dir_checkpoint)+'/'+self.args.expt+'/multi_modal_VAAL').mkdir(parents=True, exist_ok=True)
+        torch.save(vae.state_dict(), str(self.dir_checkpoint)+'/'+self.args.expt + '/'+ 'vae_checkpoint'+str(current_split)+'.pth')
+        torch.save(discriminator.state_dict(), str(self.dir_checkpoint)+'/'+self.args.expt + '/'+ 'discriminator_checkpoint'+str(current_split)+'.pth')
 
         return vae, discriminator
 
