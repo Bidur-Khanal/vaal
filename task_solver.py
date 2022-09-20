@@ -33,15 +33,13 @@ def train_task(args,net, train_loader, val_loader, test_loader,
         scale = None
 
     best_val_dice = 0.
-    # (Initialize logging)
-    # experiment = wandb.init(project='U-Net-active-learning')
-    # experiment.config.update(vars(args))
+   
 
     
     # 4. Set up the optimizer, the loss, the learning rate scheduler and the loss scaling for AMP
     optimizer = optim.RMSprop(net.parameters(), lr=learning_rate, weight_decay=1e-8, momentum=0.9)
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max', patience=2)  # goal: maximize Dice score
-    grad_scaler = torch.cuda.amp.GradScaler(enabled=amp)
+    #grad_scaler = torch.cuda.amp.GradScaler(enabled=amp)
     criterion = nn.CrossEntropyLoss()
     global_step = 0
 
@@ -60,17 +58,33 @@ def train_task(args,net, train_loader, val_loader, test_loader,
                 images = images.to(device=args.device, dtype=torch.float32)
                 true_masks = true_masks.to(device=args.device, dtype=torch.long)
 
-                with torch.cuda.amp.autocast(enabled=amp):
-                    masks_pred = net(images)
-                    loss = criterion(masks_pred, true_masks) \
-                           + dice_loss(F.softmax(masks_pred, dim=1).float(),
-                                       F.one_hot(true_masks, net.n_classes).permute(0, 3, 1, 2).float(),
-                                       multiclass=True)
+                ''' 
+                enable cuda mixed precision
 
-                optimizer.zero_grad(set_to_none=True)
-                grad_scaler.scale(loss).backward()
-                grad_scaler.step(optimizer)
-                grad_scaler.update()
+                # with torch.cuda.amp.autocast(enabled=amp):
+                #     masks_pred = net(images)
+                #     loss = criterion(masks_pred, true_masks) \
+                #            + dice_loss(F.softmax(masks_pred, dim=1).float(),
+                #                        F.one_hot(true_masks, net.n_classes).permute(0, 3, 1, 2).float(),
+                #                        multiclass=True)
+
+                # optimizer.zero_grad(set_to_none=True)
+                # grad_scaler.scale(loss).backward()
+                # grad_scaler.step(optimizer)
+                # grad_scaler.update()
+                
+                '''
+
+
+                masks_pred = net(images)
+                loss = criterion(masks_pred, true_masks) \
+                        + dice_loss(F.softmax(masks_pred, dim=1).float(),
+                                    F.one_hot(true_masks, net.n_classes).permute(0, 3, 1, 2).float(),
+                                    multiclass=True)
+
+                optimizer.zero_grad()
+                optimizer.backward()
+                optimizer.step()
 
                 pbar.update(images.shape[0])
                 global_step += 1
@@ -83,7 +97,6 @@ def train_task(args,net, train_loader, val_loader, test_loader,
                 pbar.set_postfix(**{'loss (batch)': loss.item()})
 
         ### Evaluation round
-        
         histograms = {}
         for tag, value in net.named_parameters():
             tag = tag.replace('/', '.')
