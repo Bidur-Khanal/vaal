@@ -30,7 +30,7 @@ def fix_seed(seed):
     np.random.seed(seed)
     # Pytorch
     torch.manual_seed(seed)
-    #cudnn.deterministic = True
+    cudnn.deterministic = True
 
 
 
@@ -85,6 +85,7 @@ def main(args):
 
         args.num_val = 500
         args.num_images = 2000
+        #args.budget = 0
         args.budget = 100
         args.initial_budget = 200
         args.num_classes = 5
@@ -133,6 +134,8 @@ def main(args):
                     'split': split,
         
                 })
+
+        fix_seed(0)
 
         task_model = UNet(n_channels=3, n_classes=args.classes, bilinear=args.bilinear)
         task_model.to(device=args.device)
@@ -188,12 +191,12 @@ def main(args):
 
 
         elif args.method == "RandomSampling":
-            random.seed(args.random_sampling_seed)  #every time set the same seed
-            random.shuffle(unlabeled_indices)
-            arg = np.random.randint(len(unlabeled_indices), size=len(unlabeled_indices))
-            sampled_indices = unlabeled_indices[arg][:args.budget]
-          
+            
+            np.random.seed(args.random_sampling_seed)
+            sampled_indices = np.random.choice(unlabeled_indices, size=args.budget)
 
+
+        
         current_indices = list(current_indices) + list(sampled_indices)
         sampler = data.sampler.SubsetRandomSampler(current_indices)
         querry_dataloader = data.DataLoader(train_dataset, sampler=sampler, 
