@@ -152,6 +152,8 @@ def main(args):
         unlabeled_dataloader = data.DataLoader(train_dataset, 
                 sampler=unlabeled_sampler, batch_size=args.batch_size, drop_last=False)
 
+        if split == splits[-1]:
+            break
 
         if args.method == 'VAAL':
             #### initilaize the VAAL models
@@ -192,11 +194,10 @@ def main(args):
 
         elif args.method == "RandomSampling":
             
-            np.random.seed(args.random_sampling_seed)
-            sampled_indices = np.random.choice(unlabeled_indices, size=args.budget)
+            random.seed(args.random_sampling_seed)
+            random.shuffle(unlabeled_indices)
+            sampled_indices = unlabeled_indices[:args.budget]
 
-
-        
         current_indices = list(current_indices) + list(sampled_indices)
         sampler = data.sampler.SubsetRandomSampler(current_indices)
         querry_dataloader = data.DataLoader(train_dataset, sampler=sampler, 
