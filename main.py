@@ -66,8 +66,10 @@ def main(args):
         
         args.num_val = 1890
         args.num_images = 18900
-        args.budget = 850
-        args.initial_budget = 850
+        # args.budget = 850
+        # args.initial_budget = 850
+        args.budget = 500
+        args.initial_budget = 200
         args.num_classes = 5
 
     elif args.dataset == 'liver-seg-small':
@@ -85,6 +87,7 @@ def main(args):
 
         args.num_val = 500
         args.num_images = 2000
+        #args.budget = 0
         args.budget = 100
         args.initial_budget = 200
         args.num_classes = 5
@@ -134,6 +137,8 @@ def main(args):
         
                 })
 
+        fix_seed(0)
+
         task_model = UNet(n_channels=3, n_classes=args.classes, bilinear=args.bilinear)
         task_model.to(device=args.device)
         train_task(args, net=task_model, train_loader = querry_dataloader, val_loader = val_dataloader, test_loader= test_dataloader,
@@ -149,6 +154,8 @@ def main(args):
         unlabeled_dataloader = data.DataLoader(train_dataset, 
                 sampler=unlabeled_sampler, batch_size=args.batch_size, drop_last=False)
 
+        if split == splits[-1]:
+            break
 
         if args.method == 'VAAL':
             #### initilaize the VAAL models
@@ -188,11 +195,10 @@ def main(args):
 
 
         elif args.method == "RandomSampling":
-            random.seed(args.random_sampling_seed)  #every time set the same seed
+            
+            random.seed(args.random_sampling_seed)
             random.shuffle(unlabeled_indices)
-            arg = np.random.randint(len(unlabeled_indices), size=len(unlabeled_indices))
-            sampled_indices = unlabeled_indices[arg][:args.budget]
-          
+            sampled_indices = unlabeled_indices[:args.budget]
 
         current_indices = list(current_indices) + list(sampled_indices)
         sampler = data.sampler.SubsetRandomSampler(current_indices)
