@@ -30,14 +30,14 @@ def fix_seed(seed):
     np.random.seed(seed)
     # Pytorch
     torch.manual_seed(seed)
-    #cudnn.deterministic = True
+    cudnn.deterministic = True
 
 
 
 def main(args):
 
     # (Initialize logging)
-    experiment = wandb.init(project='U-Net-active-learning-final')
+    experiment = wandb.init(project='U-Net-active-learning-final-RC')
     
     # if args.dataset == 'cifar10':
     #     test_dataloader = data.DataLoader(

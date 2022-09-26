@@ -50,22 +50,21 @@ class multi_modal_VAAL_Solver:
         vae.train()
         discriminator.train()
 
-        vae = vae.to(self.device)
-        discriminator = discriminator.to(self.device)
+       
         
         for iter_count in range(self.args.train_iterations):
             
             labeled_imgs, labeled_depths, labels = next(labeled_data)
             unlabeled_imgs, unlabeled_depths = next(unlabeled_data)
            
-            labeled_imgs = labeled_imgs.to(self.args.device)
-            labeled_depths = labeled_depths.to(self.args.device)
+            labeled_imgs = labeled_imgs.to(device=self.args.device, dtype=torch.float32)
+            labeled_depths = labeled_depths.to(device=self.args.device, dtype=torch.float32)
 
-            unlabeled_imgs = unlabeled_imgs.to(self.args.device)
-            unlabeled_depths = unlabeled_depths.to(self.args.device)
-            labels = labels.to(self.args.device)
+            unlabeled_imgs = unlabeled_imgs.to(device=self.args.device, dtype=torch.float32)
+            unlabeled_depths = unlabeled_depths.to(device=self.args.device, dtype=torch.float32)
+            labels = labels.to(device=self.args.device, dtype=torch.long)
 
-        
+
             # VAE step
             for count in range(self.args.num_vae_steps):
                 recon, depth_recon, z, mu, logvar = vae(labeled_imgs)
@@ -84,8 +83,8 @@ class multi_modal_VAAL_Solver:
                 unlab_real_preds = torch.ones(unlabeled_imgs.size(0))
                     
 
-                lab_real_preds = lab_real_preds.to(self.args.device)
-                unlab_real_preds = unlab_real_preds.to(self.args.device)
+                lab_real_preds = lab_real_preds.to(device=self.args.device, dtype=torch.long)
+                unlab_real_preds = unlab_real_preds.to(device=self.args.device, dtype=torch.long)
 
 
                 dsc_loss = self.bce_loss(labeled_preds[:,0], lab_real_preds) + \
@@ -100,11 +99,12 @@ class multi_modal_VAAL_Solver:
                     labeled_imgs, labeled_depths, _ = next(labeled_data)
                     unlabeled_imgs, unlabeled_depths = next(unlabeled_data)
 
-                    labeled_imgs = labeled_imgs.to(self.args.device)
-                    labeled_depths = labeled_depths.to(self.args.device)
-                    unlabeled_imgs = unlabeled_imgs.to(self.args.device)
-                    unlabeled_depths = unlabeled_depths.to(self.args.device)
-                    #labels = labels.to(self.args.device)
+                    labeled_imgs = labeled_imgs.to(device=self.args.device, dtype=torch.float32)
+                    labeled_depths = labeled_depths.to(device=self.args.device, dtype=torch.float32)
+
+                    unlabeled_imgs = unlabeled_imgs.to(device=self.args.device, dtype=torch.float32)
+                    unlabeled_depths = unlabeled_depths.to(device=self.args.device, dtype=torch.float32)
+                    labels = labels.to(device=self.args.device, dtype=torch.long)
 
             # Discriminator step
             for count in range(self.args.num_adv_steps):
@@ -119,8 +119,8 @@ class multi_modal_VAAL_Solver:
                 unlab_fake_preds = torch.zeros(unlabeled_imgs.size(0))
 
                 
-                lab_real_preds = lab_real_preds.to(self.args.device)
-                unlab_fake_preds = unlab_fake_preds.to(self.args.device)
+                lab_real_preds = lab_real_preds.to(device=self.args.device, dtype=torch.long)
+                unlab_fake_preds = unlab_fake_preds.to(device=self.args.device, dtype=torch.long)
                 
                 dsc_loss = self.bce_loss(labeled_preds[:,0], lab_real_preds) + \
                         self.bce_loss(unlabeled_preds[:,0], unlab_fake_preds)
@@ -134,11 +134,11 @@ class multi_modal_VAAL_Solver:
                     labeled_imgs, labeled_depths, _ = next(labeled_data)
                     unlabeled_imgs, unlabeled_depths = next(unlabeled_data)
 
-                    labeled_imgs = labeled_imgs.to(self.args.device)
-                    labeled_depths = labeled_depths.to(self.args.device)
-                    unlabeled_imgs = unlabeled_imgs.to(self.args.device)
-                    unlabeled_depths = unlabeled_depths.to(self.args.device)
-                    #labels = labels.to(self.args.device)
+                    labeled_imgs = labeled_imgs.to(device=self.args.device, dtype=torch.float32)
+                    labeled_depths = labeled_depths.to(device=self.args.device, dtype=torch.float32)
+                    unlabeled_imgs = unlabeled_imgs.to(device=self.args.device, dtype=torch.float32)
+                    unlabeled_depths = unlabeled_depths.to(device=self.args.device, dtype=torch.float32)
+                    labels = labels.to(device=self.args.device, dtype=torch.long)
 
                 
 
