@@ -79,8 +79,8 @@ class VAAL_Solver:
                 unlab_real_preds = torch.ones(unlabeled_imgs.size(0))
                     
 
-                lab_real_preds = lab_real_preds.to(device=self.args.device, dtype=torch.long)
-                unlab_real_preds = unlab_real_preds.to(device=self.args.device, dtype=torch.long)
+                lab_real_preds = lab_real_preds.to(device=self.args.device)
+                unlab_real_preds = unlab_real_preds.to(device=self.args.device)
 
 
                 dsc_loss = self.bce_loss(labeled_preds[:,0], lab_real_preds) + \
@@ -113,8 +113,8 @@ class VAAL_Solver:
                 unlab_fake_preds = torch.zeros(unlabeled_imgs.size(0))
 
                 
-                lab_real_preds = lab_real_preds.to(device=self.args.device, dtype=torch.long)
-                unlab_fake_preds = unlab_fake_preds.to(device=self.args.device, dtype=torch.long)
+                lab_real_preds = lab_real_preds.to(device=self.args.device)
+                unlab_fake_preds = unlab_fake_preds.to(device=self.args.device)
                 
                 dsc_loss = self.bce_loss(labeled_preds[:,0], lab_real_preds) + \
                         self.bce_loss(unlabeled_preds[:,0], unlab_fake_preds)
