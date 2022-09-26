@@ -30,14 +30,14 @@ def fix_seed(seed):
     np.random.seed(seed)
     # Pytorch
     torch.manual_seed(seed)
-    #cudnn.deterministic = True
+    cudnn.deterministic = True
 
 
 
 def main(args):
 
     # (Initialize logging)
-    experiment = wandb.init(project='U-Net-active-learning-final')
+    experiment = wandb.init(project='U-Net-active-learning-final-RC')
     
     # if args.dataset == 'cifar10':
     #     test_dataloader = data.DataLoader(
@@ -66,10 +66,10 @@ def main(args):
         
         args.num_val = 1890
         args.num_images = 18900
-        # args.budget = 850
-        # args.initial_budget = 850
-        args.budget = 500
-        args.initial_budget = 200
+        args.budget = 850
+        args.initial_budget = 850
+        #args.budget = 500
+        #args.initial_budget = 200
         args.num_classes = 5
 
     elif args.dataset == 'liver-seg-small':

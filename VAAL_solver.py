@@ -52,20 +52,16 @@ class VAAL_Solver:
         discriminator.train()
         
         
-        vae = vae.to(self.device)
-        discriminator = discriminator.to(self.device)
-        
-        
-        
         for iter_count in range(self.args.train_iterations):
            
             labeled_imgs, labels = next(labeled_data)
             unlabeled_imgs = next(unlabeled_data)
 
-           
-            labeled_imgs = labeled_imgs.to(self.args.device)
-            unlabeled_imgs = unlabeled_imgs.to(self.args.device)
-            labels = labels.to(self.args.device)
+        
+            labeled_imgs = labeled_imgs.to(device=self.args.device, dtype=torch.float32)
+            unlabeled_imgs = unlabeled_imgs.to(device=self.args.device, dtype=torch.float32)
+            labels = labels.to(device=self.args.device, dtype=torch.long)
+
 
 
             # VAE step
@@ -83,8 +79,8 @@ class VAAL_Solver:
                 unlab_real_preds = torch.ones(unlabeled_imgs.size(0))
                     
 
-                lab_real_preds = lab_real_preds.to(self.args.device)
-                unlab_real_preds = unlab_real_preds.to(self.args.device)
+                lab_real_preds = lab_real_preds.to(device=self.args.device)
+                unlab_real_preds = unlab_real_preds.to(device=self.args.device)
 
 
                 dsc_loss = self.bce_loss(labeled_preds[:,0], lab_real_preds) + \
@@ -99,9 +95,10 @@ class VAAL_Solver:
                     labeled_imgs, _ = next(labeled_data)
                     unlabeled_imgs = next(unlabeled_data)
 
-                    labeled_imgs = labeled_imgs.to(self.args.device)
-                    unlabeled_imgs = unlabeled_imgs.to(self.args.device)
-                    #labels = labels.to(self.args.device)
+                    labeled_imgs = labeled_imgs.to(device=self.args.device, dtype=torch.float32)
+                    unlabeled_imgs = unlabeled_imgs.to(device=self.args.device, dtype=torch.float32)
+                    labels = labels.to(device=self.args.device, dtype=torch.long)
+
 
             # Discriminator step
             for count in range(self.args.num_adv_steps):
@@ -116,8 +113,8 @@ class VAAL_Solver:
                 unlab_fake_preds = torch.zeros(unlabeled_imgs.size(0))
 
                 
-                lab_real_preds = lab_real_preds.to(self.args.device)
-                unlab_fake_preds = unlab_fake_preds.to(self.args.device)
+                lab_real_preds = lab_real_preds.to(device=self.args.device)
+                unlab_fake_preds = unlab_fake_preds.to(device=self.args.device)
                 
                 dsc_loss = self.bce_loss(labeled_preds[:,0], lab_real_preds) + \
                         self.bce_loss(unlabeled_preds[:,0], unlab_fake_preds)
@@ -132,10 +129,9 @@ class VAAL_Solver:
                     unlabeled_imgs = next(unlabeled_data)
 
                     
-                    labeled_imgs = labeled_imgs.to(self.args.device)
-                    unlabeled_imgs = unlabeled_imgs.to(self.args.device)
-                    #labels = labels.to(self.args.device)
-
+                    labeled_imgs = labeled_imgs.to(device=self.args.device, dtype=torch.float32)
+                    unlabeled_imgs = unlabeled_imgs.to(device=self.args.device, dtype=torch.float32)
+                    labels = labels.to(device=self.args.device, dtype=torch.long)
                 
 
             if iter_count % 100 == 0:
