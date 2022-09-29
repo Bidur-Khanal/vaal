@@ -139,22 +139,26 @@ def test_task(args,net, train_loader, val_loader, test_loader,wandb_log = None, 
         scale = None
 
     dir_checkpoint = Path('./checkpoints/')
-    val_score = evaluate_classwise(net, val_loader, args.device)
-    for key, value in val_score.items():
-            wandb_log.log({'Val Dice Class '+str(key): value})
+    
     
     net.load_state_dict(torch.load(str(dir_checkpoint)+'/'+args.expt + '/'+ 'checkpoint'+str(split)+'.pth'))
     
-    val_score = evaluate_classwise(net, val_loader, args.device)
-    for key, value in val_score.items():
-            wandb_log.log({'Val Dice Class '+str(key): value})
-            
-    test_score = evaluate_classwise(net, test_loader, args.device)
+    # val_score,_,_,_ = evaluate_classwise(net, val_loader, args.device)
+    # for key, value in val_score.items():
+    #         wandb_log.log({'Val Dice Class '+str(key): value})
+
+    test_score, SME, class_wise_SME, classwise_perbatch_dice_scores = evaluate_classwise(net, test_loader, args.device)
+    classwise_perbatch_dice_scores_list = [v for k,v in classwise_perbatch_dice_scores.items()]
+
+
     for key, value in test_score.items():
             wandb_log.log({'Test Dice Class '+str(key): value})
+            #wandb_log.log({'Test SME Class '+str(key): class_wise_SME[key]})
+            wandb_log.log({'Test STD Class '+str(key): class_wise_SME[key]})
+            wandb_log.log({'Test per class dice Class '+str(key): classwise_perbatch_dice_scores_list[key]})
 
-
-
+    #wandb_log.log({'Test SME ':SME})
+    wandb_log.log({'Test STD ':SME})
 
 if __name__ == '__main__':
     args = arguments.get_args()

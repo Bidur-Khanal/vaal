@@ -45,7 +45,8 @@ def evaluate_classwise(net, dataloader, device):
     net.eval()
     num_val_batches = len(dataloader)
     classwise_dice_score = {0:0,1:0,2:0,3:0,4:0}
-
+    eachbatch_dice = []
+    classwise_perbatch_dice_scores = {0:[],1:[],2:[],3:[],4:[]}
     # iterate over the validation set
     for image, mask_true, depth in tqdm(dataloader, total=num_val_batches, desc='Validation round', unit='batch', leave=False):
         
@@ -69,13 +70,29 @@ def evaluate_classwise(net, dataloader, device):
                 # compute the Dice score, don't ignore background
                 class_dice_score = perclass_dice_coeff(mask_pred, mask_true, reduce_batch_first=False)   
                 
+                batchwise_dice = 0
+                
                 for key, value in class_dice_score.items():
                     classwise_dice_score[key] = classwise_dice_score[key] + value
+                    classwise_perbatch_dice_scores[key].append(value) 
+                    batchwise_dice += value 
+
+                eachbatch_dice.append(batchwise_dice)
+    SME = np.std(eachbatch_dice) #/np.sqrt(num_val_batches)
+    
+    class_wise_SME = []
+
+    ### classwise SME
+    for key, value in classwise_perbatch_dice_scores.items():
+        #class_wise_SME.append(np.std(value)/np.sqrt(num_val_batches)) 
+        class_wise_SME.append(np.std(value)) 
+
+
     net.train()
     # Fixes a potential division by zero error
     if num_val_batches == 0:
-        return classwise_dice_score
+        return classwise_dice_score, SME
 
     classwise_dice_score = {key: value / num_val_batches for key, value in classwise_dice_score.items()}
-    return classwise_dice_score
+    return classwise_dice_score, SME, class_wise_SME, classwise_perbatch_dice_scores
 
