@@ -32,6 +32,15 @@ def multiclass_dice_coeff(input: Tensor, target: Tensor, reduce_batch_first: boo
     return dice / input.shape[1]
 
 
+def perclass_dice_coeff(input: Tensor, target: Tensor, reduce_batch_first: bool = False, epsilon=1e-6):
+    # Average of Dice coefficient for all classes
+    assert input.size() == target.size()
+    class_dice_score = {0:0,1:0,2:0,3:0,4:0}
+    for channel in range(input.shape[1]):
+        class_dice_score[channel] = dice_coeff(input[:, channel, ...], target[:, channel, ...], reduce_batch_first, epsilon)
+    class_dice_score = {key: value / input.shape[1] for key, value in class_dice_score.items()}
+    return class_dice_score
+
 def dice_loss(input: Tensor, target: Tensor, multiclass: bool = False):
     # Dice loss (objective to minimize) between 0 and 1
     assert input.size() == target.size()
