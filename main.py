@@ -37,7 +37,7 @@ def fix_seed(seed):
 def main(args):
 
     # (Initialize logging)
-    experiment = wandb.init(project='U-Net-active-learning-final-RC2')
+    experiment = wandb.init(project='U-Net-active-learning-final-RC')
     
     # if args.dataset == 'cifar10':
     #     test_dataloader = data.DataLoader(
@@ -71,6 +71,28 @@ def main(args):
         #args.budget = 500
         #args.initial_budget = 200
         args.num_classes = 5
+
+
+    if args.dataset == 'liver-seg-gallbladder-removed':
+        test_dataloader = data.DataLoader(
+                datasets.ImageFolder(args.data_path, transform=imagenet_transformer()),
+            drop_last=False, batch_size=args.batch_size)
+
+        scale = tuple(float(i) for i in args.scale.split(","))
+        if min(scale) == 0:
+            scale = None
+
+        train_dataset =  LiverSegDataset_Gallbladder_Removed("/home/bidur/vaal/data/liver_seg_dataset", scale = scale, flip = True, resize= args.resize,train_pth_file = 'train_files_filtered_gallbladder.npy', test_pth_file = 'test_files_filtered_gallbladder.npy')
+        test_dataset =  LiverSegDataset_Gallbladder_Removed("/home/bidur/vaal/data/liver_seg_dataset", train = False, scale = scale, flip = True, resize= args.resize,train_pth_file = 'train_files_filtered_gallbladder.npy', test_pth_file = 'test_files_filtered_gallbladder.npy')
+        
+        
+        args.num_val = 1819
+        args.num_images = 18191
+        args.budget = 818
+        args.initial_budget = 818
+        #args.budget = 500
+        #args.initial_budget = 200
+        args.num_classes = 4
 
     elif args.dataset == 'liver-seg-small':
         
