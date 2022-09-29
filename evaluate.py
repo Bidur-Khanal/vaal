@@ -68,7 +68,8 @@ def evaluate_classwise(net, dataloader, device):
                 mask_pred = F.one_hot(mask_pred.argmax(dim=1), net.n_classes).permute(0, 3, 1, 2).float()
                 # compute the Dice score, don't ignore background
                 class_dice_score = perclass_dice_coeff(mask_pred, mask_true, reduce_batch_first=False)   
-                for key, value in class_dice_score:
+                print(class_dice_score)
+                for key, value in class_dice_score.items():
                     classwise_dice_score[key] = classwise_dice_score[key] + value
     net.train()
     # Fixes a potential division by zero error
