@@ -73,8 +73,8 @@ def evaluate_classwise(net, dataloader, device):
     net.train()
     # Fixes a potential division by zero error
     if num_val_batches == 0:
-        return dice_score
+        return classwise_dice_score
 
     classwise_dice_score = {key: value / num_val_batches for key, value in classwise_dice_score.items()}
-    return dice_score / num_val_batches
+    return classwise_dice_score
 
