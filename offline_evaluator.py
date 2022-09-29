@@ -144,9 +144,14 @@ def test_task(args,net, train_loader, val_loader, test_loader,wandb_log = None, 
             wandb_log.log({'Val Dice Class '+str(key): value})
     
     net.load_state_dict(torch.load(str(dir_checkpoint)+'/'+args.expt + '/'+ 'checkpoint'+str(split)+'.pth'))
+    
+    val_score = evaluate_classwise(net, val_loader, args.device)
+    for key, value in val_score.items():
+            wandb_log.log({'Val Dice Class '+str(key): value})
+            
     test_score = evaluate_classwise(net, test_loader, args.device)
     for key, value in test_score.items():
-            wandb_log.log({'Val Dice Class '+str(key): value})
+            wandb_log.log({'Test Dice Class '+str(key): value})
 
 
 
