@@ -25,7 +25,7 @@ do
             export NUM_VAE;
             export RAND_SAM_SEED;
 
-            sbatch -J $EXPT -o $STD -t 03-00:00:00 -e $ERR $job_File
+            sbatch -J $EXPT -o $STD -t 05-00:00:00 -e $ERR $job_File
            
         done;
     done;
