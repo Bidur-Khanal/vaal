@@ -1,15 +1,16 @@
 #! bin bash -l
 
 job_File="sbatch_run.sh" 
-#dir="sbatch_log/small_dataset_liver_seg"
-dir="sbatch_log/dataset_liver_seg_mse_2"
+# dir="sbatch_log/small_dataset_liver_seg"
+# dir="sbatch_log/dataset_liver_seg_mse_2"
+dir="sbatch_log/dataset_liver_seg_gallbladder_filtered_10_percent_gap"
 for adversary_param in  1 10 25
 do 
     for mse_gamma in 0.1 0.2 0.5 1
     do 
         for num_vae_steps in 1 2 3
         do 
-            EXPT=mse_2_full_dataset_liver_seg_EXPT_MULTI_VAAL_adver"$adversary_param"_mse"$mse_gamma"_num_vae_steps"$num_vae_steps"
+            EXPT=full_dataset_liver_seg_gallbladder_filtered_10_percent_gap_EXPT_MULTI_VAAL_adver"$adversary_param"_mse"$mse_gamma"_num_vae_steps"$num_vae_steps"
             STD=$dir/STD_MULTI_VAAL_adver"$adversary_param"_mse"$mse_gamma"_num_vae_steps"$num_vae_steps".out
             ERR=$dir/ERR_MULTI_VAAL_adver"$adversary_param"_mse"$mse_gamma"_num_vae_steps"$num_vae_steps".err
             METHOD="multimodal_VAAL"
