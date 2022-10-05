@@ -147,7 +147,7 @@ def test_task(args,net, train_loader, val_loader, test_loader,wandb_log = None, 
     # for key, value in val_score.items():
     #         wandb_log.log({'Val Dice Class '+str(key): value})
 
-    test_score, SME, class_wise_SME, classwise_perbatch_dice_scores = evaluate_classwise(net, test_loader, args.device)
+    mean_dice_score,test_score, SME, class_wise_SME, classwise_perbatch_dice_scores = evaluate_classwise(net, test_loader, args.device)
     classwise_perbatch_dice_scores_list = [v for k,v in classwise_perbatch_dice_scores.items()]
 
 
@@ -159,6 +159,7 @@ def test_task(args,net, train_loader, val_loader, test_loader,wandb_log = None, 
 
     #wandb_log.log({'Test SME ':SME})
     wandb_log.log({'Test STD ':SME})
+    wandb_log.log({'Test Mean Dice Score'+str(key): value})
 
 if __name__ == '__main__':
     args = arguments.get_args()

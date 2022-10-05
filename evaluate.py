@@ -48,7 +48,7 @@ def evaluate(net, dataloader, device, ignore_background = False):
 
 
 
-def evaluate_classwise(net, dataloader, device):
+def evaluate_classwise(net, dataloader, device, ignore_background = False):
     net.eval()
     num_val_batches = len(dataloader)
     classwise_dice_score = {0:0,1:0,2:0,3:0,4:0}
@@ -75,7 +75,13 @@ def evaluate_classwise(net, dataloader, device):
             else:
                 mask_pred = F.one_hot(mask_pred.argmax(dim=1), net.n_classes).permute(0, 3, 1, 2).float()
                 # compute the Dice score, don't ignore background
-                class_dice_score = perclass_dice_coeff(mask_pred, mask_true, reduce_batch_first=False)   
+                class_dice_score = perclass_dice_coeff(mask_pred, mask_true, reduce_batch_first=False)
+                if ignore_background:
+                    # compute the Dice score, ignore the background
+                    dice_score += multiclass_dice_coeff(mask_pred[:, 1:, ...], mask_true[:, 1:, ...], reduce_batch_first=False)
+                else:
+                    # compute the Dice score, don't ignore background
+                    dice_score += multiclass_dice_coeff(mask_pred, mask_true, reduce_batch_first=False)   
                 
                 batchwise_dice = 0
                 
@@ -85,21 +91,21 @@ def evaluate_classwise(net, dataloader, device):
                     batchwise_dice += value 
 
                 eachbatch_dice.append(batchwise_dice)
-    SME = np.std(eachbatch_dice) #/np.sqrt(num_val_batches)
+    STD = np.std(eachbatch_dice) #/np.sqrt(num_val_batches)
     
-    class_wise_SME = []
+    class_wise_STD = []
 
     ### classwise SME
     for key, value in classwise_perbatch_dice_scores.items():
         #class_wise_SME.append(np.std(value)/np.sqrt(num_val_batches)) 
-        class_wise_SME.append(np.std(value)) 
+        class_wise_STD.append(np.std(value)) 
 
 
     net.train()
     # Fixes a potential division by zero error
     if num_val_batches == 0:
-        return classwise_dice_score, SME
+        return classwise_dice_score, STD
 
     classwise_dice_score = {key: value / num_val_batches for key, value in classwise_dice_score.items()}
-    return classwise_dice_score, SME, class_wise_SME, classwise_perbatch_dice_scores
+    return dice_score, classwise_dice_score, STD, class_wise_STD, classwise_perbatch_dice_scores
 
