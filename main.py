@@ -37,7 +37,7 @@ def fix_seed(seed):
 def main(args):
 
     # (Initialize logging)
-    experiment = wandb.init(project='U-Net-active-learning-final-RC')
+    experiment = wandb.init(project='U-Net-active-learning-final-RC-nogallbladder')
     
     # if args.dataset == 'cifar10':
     #     test_dataloader = data.DataLoader(
@@ -89,6 +89,7 @@ def main(args):
         args.num_val = 1819
         args.num_images = 18191
         args.budget = 818
+        #args.budget = 818*2
         args.initial_budget = 818
         #args.budget = 500
         #args.initial_budget = 200
@@ -146,6 +147,7 @@ def main(args):
    
 
     splits = [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4]
+    #splits = [0.05, 0.15, 0.25, 0.35, 0.45, 0.55]
     
     current_indices = list(initial_indices)
     for i, split in enumerate(splits):
