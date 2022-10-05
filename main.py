@@ -37,7 +37,7 @@ def fix_seed(seed):
 def main(args):
 
     # (Initialize logging)
-    experiment = wandb.init(project='U-Net-active-learning-final-RC-nogallbladder-no-less-than-3-classes')
+    experiment = wandb.init(project='U-Net-active-learning-final-RC-2-classes')
     
     # if args.dataset == 'cifar10':
     #     test_dataloader = data.DataLoader(
@@ -128,8 +128,8 @@ def main(args):
         if min(scale) == 0:
             scale = None
 
-        train_dataset =  LiverSegDataset_2_classes("/home/bidur/vaal/data/liver_seg_dataset", scale = scale, flip = True, resize= args.resize,train_pth_file = 'train_files_filtered_gallbladder_2classes.npy', test_pth_file = 'test_files_filtered_gallbladder_2classes.npy.npy')
-        test_dataset =  LiverSegDataset_2_classes("/home/bidur/vaal/data/liver_seg_dataset", train = False, scale = scale, flip = True, resize= args.resize,train_pth_file = 'train_files_filtered_gallbladder_2classes.npy', test_pth_file = 'test_files_filtered_gallbladder_2classes.npy.npy')
+        train_dataset =  LiverSegDataset_2_classes("/home/bidur/vaal/data/liver_seg_dataset", scale = scale, flip = True, resize= args.resize,train_pth_file = 'train_files_filtered_gallbladder_2classes.npy', test_pth_file = 'test_files_filtered_gallbladder_2classes.npy')
+        test_dataset =  LiverSegDataset_2_classes("/home/bidur/vaal/data/liver_seg_dataset", train = False, scale = scale, flip = True, resize= args.resize,train_pth_file = 'train_files_filtered_gallbladder_2classes.npy', test_pth_file = 'test_files_filtered_gallbladder_2classes.npy')
         
         
         args.num_val = 1548
