@@ -73,7 +73,7 @@ def main(args):
         args.num_classes = 5
 
 
-    if args.dataset == 'liver-seg-gallbladder-removed':
+    elif args.dataset == 'liver-seg-gallbladder-removed':
         test_dataloader = data.DataLoader(
                 datasets.ImageFolder(args.data_path, transform=imagenet_transformer()),
             drop_last=False, batch_size=args.batch_size)
