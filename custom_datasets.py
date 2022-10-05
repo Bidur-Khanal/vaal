@@ -379,7 +379,7 @@ class LiverSegDataset_2_classes(Dataset):
 
     def merge_classes_mask(self,mask, classes):
         final_class = torch.tensor(min(classes), dtype=torch.long)
-        print(mask.shape)
+       
         for cls in classes:
             if cls in mask:
                 mask[mask == cls] = final_class 
