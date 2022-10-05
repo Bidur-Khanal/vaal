@@ -118,6 +118,29 @@ def main(args):
         #args.initial_budget = 200
         args.num_classes = 4
 
+    
+    elif args.dataset == 'liver-seg-gallbladder-2-classes':
+        test_dataloader = data.DataLoader(
+                datasets.ImageFolder(args.data_path, transform=imagenet_transformer()),
+            drop_last=False, batch_size=args.batch_size)
+
+        scale = tuple(float(i) for i in args.scale.split(","))
+        if min(scale) == 0:
+            scale = None
+
+        train_dataset =  LiverSegDataset_Gallbladder_Removed("/home/bidur/vaal/data/liver_seg_dataset", scale = scale, flip = True, resize= args.resize,train_pth_file = 'train_files_filtered_gallbladder_2classes.npy', test_pth_file = 'test_files_filtered_gallbladder_no_less_than_3_classes.npy')
+        test_dataset =  LiverSegDataset_Gallbladder_Removed("/home/bidur/vaal/data/liver_seg_dataset", train = False, scale = scale, flip = True, resize= args.resize,train_pth_file = 'train_files_filtered_gallbladder_2classes.npy', test_pth_file = 'test_files_filtered_gallbladder_no_less_than_3_classes.npy')
+        
+        
+        args.num_val = 1548
+        args.num_images = 15482
+        args.budget = 774
+        #args.budget = 818*2
+        args.initial_budget = 774
+        #args.budget = 500
+        #args.initial_budget = 200
+        args.num_classes = 2
+
     elif args.dataset == 'liver-seg-small':
         
         test_dataloader = data.DataLoader(

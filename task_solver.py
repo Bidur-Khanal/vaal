@@ -102,8 +102,10 @@ def train_task(args,net, train_loader, val_loader, test_loader,
             tag = tag.replace('/', '.')
             histograms['Weights/' + tag] = wandb.Histogram(value.data.cpu())
             histograms['Gradients/' + tag] = wandb.Histogram(value.grad.data.cpu())
-
-        val_score = evaluate(net, val_loader, args.device)
+        if args.dataset == 'liver-seg-gallbladder-2-classes':
+            val_score = evaluate(net, val_loader, args.device, ignore_background= True)
+        else:
+            val_score = evaluate(net, val_loader, args.device)
         scheduler.step(val_score)
 
         logging.info('Validation Dice score: {}'.format(val_score))
@@ -129,6 +131,9 @@ def train_task(args,net, train_loader, val_loader, test_loader,
             
 
     net.load_state_dict(torch.load(str(dir_checkpoint)+'/'+args.expt + '/'+ 'checkpoint'+str(split)+'.pth'))
-    test_score = evaluate(net, test_loader, args.device)
+    if args.dataset == 'liver-seg-gallbladder-2-classes':
+        test_score = evaluate(net, test_loader, args.device, ignore_background= True)
+    else:
+        test_score = evaluate(net, test_loader, args.device)
     wandb_log.log({'test Dice': test_score})
     
