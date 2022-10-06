@@ -134,11 +134,13 @@ def main(args):
         
         args.num_val = 1548
         args.num_images = 15482
-        args.budget = 200
+        #args.budget = 200
+        args.budget = 100
         # args.budget = 774
         #args.budget = 818*2
         #args.initial_budget = 774
-        args.initial_budget = 200
+        #args.initial_budget = 200
+        args.initial_budget = 100
         #args.budget = 500
         #args.initial_budget = 200
         args.num_classes = 2
