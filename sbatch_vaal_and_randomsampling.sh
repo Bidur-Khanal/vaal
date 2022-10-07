@@ -11,8 +11,10 @@ conda activate dplearning
 Scale=$"0,0"
 Resize=$"256"
 
-Dataset=$"liver-seg-gallbladder-removed"
-srun -n 1 python3 main.py --scale $Scale --resize $Resize --expt $EXPT --dataset $Dataset --method $METHOD --random_sampling_seed $RAND_SAM_SEED --query_train_epochs 30
+# Dataset=$"liver-seg-gallbladder-removed"
+# srun -n 1 python3 main.py --scale $Scale --resize $Resize --expt $EXPT --dataset $Dataset --method $METHOD --random_sampling_seed $RAND_SAM_SEED --query_train_epochs 30
 
+Dataset=$"liver-seg-gallbladder-removed-class-no-less-than-3"
+srun -n 1 python3 main.py --scale $Scale --resize $Resize --expt $EXPT --dataset $Dataset --method RandomSampling --random_sampling_seed $RAND_SAM_SEED
 
 
