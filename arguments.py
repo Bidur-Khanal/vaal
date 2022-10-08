@@ -11,7 +11,7 @@ def get_args():
     parser.add_argument('--query_train_epochs', type=int, default=100, help='Number of training epochs')
     parser.add_argument('--seed', type=int, default=0, help='use a random seed')
     parser.add_argument('--random_sampling_seed', type=int, default=0, help='use a random seed')
-    
+    parser.add_argument('--data_path', type=str, default='./data', help='Path to where the data is')
 
 
     # select the query strategy method

@@ -42,9 +42,9 @@ for seed in 0 255 1000
 do
     for mse_gamma in 0.2 0.4 0.8 1
     do 
-        EXPT= dataset_liver_seg_gallbladder_removed_class_no_less_than_3_EXPT_MULTI_VAAL_adver"$adversary_param"_mse"$mse_gamma"_seed"$seed"
-        STD=$dir/STD_MULTI_VAAL_adver"$adversary_param"_mse"$mse_gamma"_seed"$seed".out
-        ERR=$dir/ERR_MULTI_VAAL_adver"$adversary_param"_mse"$mse_gamma"_seed"$seed".err
+        EXPT=dataset_liver_seg_gallbladder_removed_class_no_less_than_3_EXPT_MULTI_VAAL_adver"$adversary_param"_mse"$mse_gamma"_Seed"$seed"
+        STD=$dir/STD_MULTI_VAAL_adver"$adversary_param"_mse"$mse_gamma"_Seed"$seed".out
+        ERR=$dir/ERR_MULTI_VAAL_adver"$adversary_param"_mse"$mse_gamma"_Seed"$seed".err
         METHOD="multimodal_VAAL"
         ADVER_PARAM=$adversary_param
         MSE_GAMMA=$mse_gamma
@@ -60,6 +60,6 @@ do
         export RAND_SAM_SEED;
         export SEED;
 
-        sbatch -J $EXPT -o $STD -t 05-00:00:00 -e $ERR $job_File   
+        sbatch -J $EXPT -o $STD -t 03-05:00:00 -e $ERR $job_File   
     done;
 done;
