@@ -40,7 +40,6 @@ def main(args):
     # experiment = wandb.init(project='U-Net-active-learning-final-RC-2-classes')
     experiment = wandb.init(project='U-Net-active-learning-final-RC-nogallbladder-no-less-than-3-classes')
 
-
     # if args.dataset == 'cifar10':
     #     test_dataloader = data.DataLoader(
     #             datasets.CIFAR10(args.data_path, download=True, transform=cifar_transformer(), train=False),
@@ -63,8 +62,8 @@ def main(args):
         if min(scale) == 0:
             scale = None
 
-        train_dataset =  LiverSegDataset("/home/bidur/vaal/data/liver_seg_dataset", scale = scale, flip = True, resize= args.resize,train_pth_file = 'train_files.npy', test_pth_file = 'test_files.npy')
-        test_dataset =  LiverSegDataset("/home/bidur/vaal/data/liver_seg_dataset", train = False, scale = scale, flip = True, resize= args.resize,train_pth_file = 'train_files.npy', test_pth_file = 'test_files.npy')
+        train_dataset =  LiverSegDataset("/home/bidur/vaal/data/liver_seg_dataset", scale = scale, flip = False, resize= args.resize,train_pth_file = 'train_files.npy', test_pth_file = 'test_files.npy')
+        test_dataset =  LiverSegDataset("/home/bidur/vaal/data/liver_seg_dataset", train = False, scale = scale, flip = False, resize= args.resize,train_pth_file = 'train_files.npy', test_pth_file = 'test_files.npy')
         
         args.num_val = 1890
         args.num_images = 18900
@@ -84,8 +83,8 @@ def main(args):
         if min(scale) == 0:
             scale = None
 
-        train_dataset =  LiverSegDataset_Gallbladder_Removed("/home/bidur/vaal/data/liver_seg_dataset", scale = scale, flip = True, resize= args.resize,train_pth_file = 'train_files_filtered_gallbladder.npy', test_pth_file = 'test_files_filtered_gallbladder.npy')
-        test_dataset =  LiverSegDataset_Gallbladder_Removed("/home/bidur/vaal/data/liver_seg_dataset", train = False, scale = scale, flip = True, resize= args.resize,train_pth_file = 'train_files_filtered_gallbladder.npy', test_pth_file = 'test_files_filtered_gallbladder.npy')
+        train_dataset =  LiverSegDataset_Gallbladder_Removed("/home/bidur/vaal/data/liver_seg_dataset", scale = scale, flip = False, resize= args.resize,train_pth_file = 'train_files_filtered_gallbladder.npy', test_pth_file = 'test_files_filtered_gallbladder.npy')
+        test_dataset =  LiverSegDataset_Gallbladder_Removed("/home/bidur/vaal/data/liver_seg_dataset", train = False, scale = scale, flip = False, resize= args.resize,train_pth_file = 'train_files_filtered_gallbladder.npy', test_pth_file = 'test_files_filtered_gallbladder.npy')
         
         
         args.num_val = 1819
@@ -107,16 +106,17 @@ def main(args):
         if min(scale) == 0:
             scale = None
 
-        train_dataset =  LiverSegDataset_Gallbladder_Removed("/home/bidur/vaal/data/liver_seg_dataset", scale = scale, flip = True, resize= args.resize,train_pth_file = 'train_files_filtered_gallbladder_no_less_than_3_classes.npy', test_pth_file = 'test_files_filtered_gallbladder_no_less_than_3_classes.npy')
-        test_dataset =  LiverSegDataset_Gallbladder_Removed("/home/bidur/vaal/data/liver_seg_dataset", train = False, scale = scale, flip = True, resize= args.resize,train_pth_file = 'train_files_filtered_gallbladder_no_less_than_3_classes.npy', test_pth_file = 'test_files_filtered_gallbladder_no_less_than_3_classes.npy')
+        train_dataset =  LiverSegDataset_Gallbladder_Removed("/home/bidur/vaal/data/liver_seg_dataset", scale = scale, flip = False, resize= args.resize,train_pth_file = 'train_files_filtered_gallbladder_no_less_than_3_classes.npy', test_pth_file = 'test_files_filtered_gallbladder_no_less_than_3_classes.npy')
+        test_dataset =  LiverSegDataset_Gallbladder_Removed("/home/bidur/vaal/data/liver_seg_dataset", train = False, scale = scale, flip = False, resize= args.resize,train_pth_file = 'train_files_filtered_gallbladder_no_less_than_3_classes.npy', test_pth_file = 'test_files_filtered_gallbladder_no_less_than_3_classes.npy')
         
         
         args.num_val = 1548
         args.num_images = 15482
         #args.budget = 774
-        args.budget = 200
+        #args.budget = 200
+        args.budget = 500
         #args.initial_budget = 774
-        args.initial_budget = 200
+        args.initial_budget = 500
 
         args.num_classes = 4
 
@@ -130,19 +130,19 @@ def main(args):
         if min(scale) == 0:
             scale = None
 
-        train_dataset =  LiverSegDataset_2_classes("/home/bidur/vaal/data/liver_seg_dataset", scale = scale, flip = True, resize= args.resize,train_pth_file = 'train_files_filtered_gallbladder_2classes.npy', test_pth_file = 'test_files_filtered_gallbladder_2classes.npy')
-        test_dataset =  LiverSegDataset_2_classes("/home/bidur/vaal/data/liver_seg_dataset", train = False, scale = scale, flip = True, resize= args.resize,train_pth_file = 'train_files_filtered_gallbladder_2classes.npy', test_pth_file = 'test_files_filtered_gallbladder_2classes.npy')
+        train_dataset =  LiverSegDataset_2_classes("/home/bidur/vaal/data/liver_seg_dataset", scale = scale, flip = False, resize= args.resize,train_pth_file = 'train_files_filtered_gallbladder_2classes.npy', test_pth_file = 'test_files_filtered_gallbladder_2classes.npy')
+        test_dataset =  LiverSegDataset_2_classes("/home/bidur/vaal/data/liver_seg_dataset", train = False, scale = scale, flip = False, resize= args.resize,train_pth_file = 'train_files_filtered_gallbladder_2classes.npy', test_pth_file = 'test_files_filtered_gallbladder_2classes.npy')
         
         
         args.num_val = 1548
         args.num_images = 15482
-        args.budget = 200
+        #args.budget = 200
+        args.budget = 100
         # args.budget = 774
         #args.budget = 818*2
         #args.initial_budget = 774
-        args.initial_budget = 200
-        #args.budget = 500
         #args.initial_budget = 200
+        args.initial_budget = 100
         args.num_classes = 2
 
     elif args.dataset == 'liver-seg-small':
@@ -155,8 +155,8 @@ def main(args):
         if min(scale) == 0:
             scale = None
 
-        train_dataset =  LiverSegDataset("/home/bidur/vaal/data/liver_seg_dataset", scale = scale, flip = True, resize= args.resize, train_pth_file= 'train_files_curated.npy')
-        test_dataset =  LiverSegDataset("/home/bidur/vaal/data/liver_seg_dataset", train = False, scale = scale, flip = True, resize= args.resize, test_pth_file= "test_files_curated.npy")
+        train_dataset =  LiverSegDataset("/home/bidur/vaal/data/liver_seg_dataset", scale = scale, flip = False, resize= args.resize, train_pth_file= 'train_files_curated.npy')
+        test_dataset =  LiverSegDataset("/home/bidur/vaal/data/liver_seg_dataset", train = False, scale = scale, flip = False, resize= args.resize, test_pth_file= "test_files_curated.npy")
 
         args.num_val = 500
         args.num_images = 2000
@@ -211,9 +211,9 @@ def main(args):
         
                 })
 
-        fix_seed(0)
+        fix_seed(args.seed)
 
-        task_model = UNet(n_channels=3, n_classes=args.classes, bilinear=args.bilinear)
+        task_model = UNet(n_channels=3, n_classes=args.num_classes, bilinear=args.bilinear)
         task_model.to(device=args.device)
         train_task(args, net=task_model, train_loader = querry_dataloader, val_loader = val_dataloader, test_loader= test_dataloader,
                   epochs=args.epochs,
@@ -281,6 +281,6 @@ def main(args):
 
 if __name__ == '__main__':
     args = arguments.get_args()
-    fix_seed(0)
+    fix_seed(args.seed)
     main(args)
 

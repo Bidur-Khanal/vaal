@@ -9,7 +9,6 @@ def get_args():
     parser.add_argument('--dataset', type=str, default='liver-seg', help='Name of the dataset used.')
     parser.add_argument('--batch_size', type=int, default=16, help='Batch size used for training and testing')
     parser.add_argument('--query_train_epochs', type=int, default=100, help='Number of training epochs')
-    parser.add_argument('--data_path', type=str, default='./data', help='Path to where the data is')
     parser.add_argument('--seed', type=int, default=0, help='use a random seed')
     parser.add_argument('--random_sampling_seed', type=int, default=0, help='use a random seed')
     
@@ -47,11 +46,8 @@ def get_args():
     parser.add_argument('--epochs', '-e', metavar='E', type=int, default=50, help='Number of epochs')
     parser.add_argument('--learning-rate', '-l', metavar='LR', type=float, default=1e-5,
                         help='Learning rate', dest='lr')
-    parser.add_argument('--validation', '-v', dest='val', type=float, default=10.0,
-                        help='Percent of the data that is used as validation (0-100)')
     parser.add_argument('--amp', action='store_true', default=False, help='Use mixed precision')
     parser.add_argument('--bilinear', action='store_true', default=False, help='Use bilinear upsampling')
-    parser.add_argument('--classes', '-c', type=int, default=5, help='Number of classes')
     parser.add_argument('--resize', type=int, default=0, help='fix_resize')
     parser.add_argument('--scale', type=str, default= "0,0", help='scale the image')
     parser.add_argument('--expt', type =str , default= 'Expt',

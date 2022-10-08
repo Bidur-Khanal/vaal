@@ -2,6 +2,7 @@ import torch
 import torch.nn.functional as F
 from tqdm import tqdm
 import numpy as np
+import wandb
 #from torchmetrics.functional import dice_score as ds
 from dice_score import multiclass_dice_coeff, dice_coeff, perclass_dice_coeff
 
@@ -48,7 +49,7 @@ def evaluate(net, dataloader, device, ignore_background = False):
 
 
 
-def evaluate_classwise(net, dataloader, device, ignore_background = False):
+def evaluate_classwise(net, dataloader, device, ignore_background = False, log_masks = None):
     net.eval()
     num_val_batches = len(dataloader)
     classwise_dice_score = {0:0,1:0,2:0,3:0,4:0}
@@ -91,6 +92,15 @@ def evaluate_classwise(net, dataloader, device, ignore_background = False):
                     batchwise_dice += value 
 
                 eachbatch_dice.append(batchwise_dice)
+
+        if log_masks is not None:
+            log_masks.log({
+            'images': wandb.Image(image[0].cpu()),
+            'masks': {
+                'true': wandb.Image(mask_true[0].float().cpu()),
+                'pred': wandb.Image(mask_pred.argmax(dim=1)[0].float().cpu()),
+            },
+        })       
     STD = np.std(eachbatch_dice) #/np.sqrt(num_val_batches)
     
     class_wise_STD = []
