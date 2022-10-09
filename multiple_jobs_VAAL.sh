@@ -26,7 +26,7 @@ do
     export SEED;
 
 
-    sbatch -J $EXPT -o $STD -t 03-00:00:00 -e $ERR $job_File
+    sbatch -J $EXPT -o $STD -t 04-00:00:00 -e $ERR $job_File
 done;
            
         
