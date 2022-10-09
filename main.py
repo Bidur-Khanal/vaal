@@ -216,8 +216,7 @@ def main(args):
 
         fix_seed(args.seed)
 
-        if args.task_type == "segmentation:"
-
+        if args.task_type == "segmentation":
             task_model = UNet(n_channels=3, n_classes=args.num_classes, bilinear=args.bilinear)
             task_model.to(device=args.device)
             train_task(args, net=task_model, train_loader = querry_dataloader, val_loader = val_dataloader, test_loader= test_dataloader,
