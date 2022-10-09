@@ -196,7 +196,7 @@ class LiverSegDataset_Gallbladder_Removed(Dataset):
         Seg_classes('liver', 0, (0, 0, 255), 'blue'),
         Seg_classes('stomach', 1, (255, 0, 0), 'red'),
         Seg_classes('abdominal wall', 2, (0, 255, 0), 'green'),
-        Seg_classes('ligament', 4, (255, 0, 255), 'magenta')]
+        Seg_classes('ligament', 3, (255, 0, 255), 'magenta')]
 
         self.colors = [c.color for c in self.classes ]
         self.train_ids = [c.train_id for c in self.classes]
@@ -307,7 +307,7 @@ class LiverSegDataset_2_classes(Dataset):
         Seg_classes('liver', 0, (0, 0, 255), 'blue'),
         Seg_classes('stomach', 1, (255, 0, 0), 'red'),
         Seg_classes('abdominal wall', 2, (0, 255, 0), 'green'),
-        Seg_classes('ligament', 4, (255, 0, 255), 'magenta')]
+        Seg_classes('ligament', 3, (255, 0, 255), 'magenta')]
 
         self.colors = [c.color for c in self.classes ]
         self.train_ids = [c.train_id for c in self.classes]
@@ -407,6 +407,7 @@ class LiverSegDataset_2_classes(Dataset):
         mask = self.merge_classes_mask(mask, classes = [1,2,3,4])
        
         return image, mask, depth
+
 
    
 
