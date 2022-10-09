@@ -1,6 +1,7 @@
 from multimodal_VAAL_solver import multi_modal_VAAL_Solver
 import torch
 from torchvision import datasets, transforms
+import torchvision.models as torch_models
 import torch.utils.data.sampler  as sampler
 import torch.utils.data as data
 
@@ -19,6 +20,8 @@ import arguments
 from evaluate import evaluate
 from unet import UNet
 from task_solver import train_task
+
+from multi_label_classification_task_solver import train_multilabel_classifier
 import wandb
 import torch.backends.cudnn as cudnn
 
@@ -213,13 +216,25 @@ def main(args):
 
         fix_seed(args.seed)
 
-        task_model = UNet(n_channels=3, n_classes=args.num_classes, bilinear=args.bilinear)
-        task_model.to(device=args.device)
-        train_task(args, net=task_model, train_loader = querry_dataloader, val_loader = val_dataloader, test_loader= test_dataloader,
-                  epochs=args.epochs,
-                  batch_size=args.batch_size,
-                  learning_rate=args.lr,
-                  amp=args.amp, wandb_log= experiment, split = split)
+        if args.task_type == "segmentation:"
+
+            task_model = UNet(n_channels=3, n_classes=args.num_classes, bilinear=args.bilinear)
+            task_model.to(device=args.device)
+            train_task(args, net=task_model, train_loader = querry_dataloader, val_loader = val_dataloader, test_loader= test_dataloader,
+                    epochs=args.epochs,
+                    batch_size=args.batch_size,
+                    learning_rate=args.lr,
+                    amp=args.amp, wandb_log= experiment, split = split)
+
+        elif args.task_type == "classification":
+           
+            task_model = torch_models.resnet18(pretrained= False, num_classes = args.num_classes)
+            task_model.to(device=args.device)
+            train_multilabel_classifier(args, net=task_model, train_loader = querry_dataloader, val_loader = val_dataloader, test_loader= test_dataloader,
+              epochs = args.epochs,
+              batch_size = args.batch_size,
+              learning_rate=args.lr,
+              wandb_log= experiment, split = split)
 
 
         ## all unlabeled train samples
