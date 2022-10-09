@@ -177,7 +177,7 @@ def main(args):
     
 
     all_indices = set(np.arange(args.num_images))
-    random.seed(args.seed)  #every time set the same seed
+    random.seed(0)  #every time set the same seed
     val_indices = random.sample(all_indices, args.num_val)
     all_indices = np.setdiff1d(list(all_indices), val_indices)
 
