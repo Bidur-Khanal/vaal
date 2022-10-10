@@ -1,15 +1,15 @@
+import os
 from multimodal_VAAL_solver import multi_modal_VAAL_Solver
 import torch
 from torchvision import datasets, transforms
 import torchvision.models as torch_models
 import torch.utils.data.sampler  as sampler
 import torch.utils.data as data
-
+import sampler as query_Sampler
 import numpy as np
 import argparse
 import random
-import os
-
+from pathlib import Path
 from custom_datasets import *
 import model
 import multi_modal_model
@@ -43,18 +43,6 @@ def main(args):
     # experiment = wandb.init(project='U-Net-active-learning-final-RC-2-classes')
     experiment = wandb.init(project='U-Net-active-learning-final-RC-nogallbladder-no-less-than-3-classes')
 
-    # if args.dataset == 'cifar10':
-    #     test_dataloader = data.DataLoader(
-    #             datasets.CIFAR10(args.data_path, download=True, transform=cifar_transformer(), train=False),
-    #         batch_size=args.batch_size, drop_last=False)
-
-    #     train_dataset = CIFAR10(args.data_path)
-
-    #     args.num_images = 50000
-    #     args.num_val = 5000
-    #     args.budget = 2500
-    #     args.initial_budget = 5000
-    #     args.num_classes = 10
 
     if args.dataset == 'liver-seg':
         
@@ -252,40 +240,51 @@ def main(args):
 
         if args.method == 'VAAL':
             #### initilaize the VAAL models
-            VAAL_solver = VAAL_Solver(args, test_dataloader)
-            vae = model.VAE(args.latent_dim)
             discriminator = model.Discriminator(args.latent_dim)
+            vae = model.VAE(args.latent_dim)
 
-            vae = vae.to(device = args.device)
+            # load the checkpoint models
+            discriminator.load_state_dict(torch.load('./checkpoints/'+'/'+self.args.expt + 
+                                        '/'+ 'discriminator_checkpoint'+str(current_split)+'.pth'))
+            vae.load_state_dict(torch.load('./checkpoints/'+'/'+self.args.expt + 
+                                        '/'+ 'vae_checkpoint'+str(current_split)+'.pth'))
+ 
+            # send model to gpu
             discriminator = discriminator.to(device = args.device)
+            vae = vae.to(device = args.device)
+            
+            VAAL_sampler = query_sampler.AdversarySampler(self.args.budget)
 
-            # train the models on the current data
-            vae, discriminator = VAAL_solver.train(split,querry_dataloader,
-                                                val_dataloader,
-                                                vae, 
-                                                discriminator,
-                                                unlabeled_dataloader)
-            sampled_indices = VAAL_solver.sample_for_labeling(vae, discriminator, unlabeled_dataloader, unlabeled_indices)
+
+            sampled_indices = VAAL_sampler.sample(vae, 
+                                             discriminator, 
+                                             unlabeled_dataloader, unlabeled_indices,
+                                             self.args.device)
 
 
         elif args.method == 'multimodal_VAAL':
             
             #### initilaize the VAAL models
-            multimodal_VAAL_solver = multi_modal_VAAL_Solver(args,test_dataloader)
             vae = multi_modal_model.VAE(args.latent_dim)
             discriminator = multi_modal_model.Discriminator(args.latent_dim)
 
+            # load the checkpoint models
+            discriminator.load_state_dict(torch.load('./checkpoints/'+'/'+self.args.expt + 
+                                        '/'+ 'discriminator_checkpoint'+str(current_split)+'.pth'))
+            vae.load_state_dict(torch.load('./checkpoints/'+'/'+self.args.expt + 
+                                        '/'+ 'vae_checkpoint'+str(current_split)+'.pth'))
+
+            # send the model to gpu
             vae = vae.to(device = args.device)
             discriminator = discriminator.to(device = args.device)
 
-            # train the models on the current data
-            vae, discriminator = multimodal_VAAL_solver.train(split,querry_dataloader,
-                                                val_dataloader,
-                                                vae, 
-                                                discriminator,
-                                                unlabeled_dataloader)
-            sampled_indices = multimodal_VAAL_solver.sample_for_labeling(vae, discriminator, unlabeled_dataloader, unlabeled_indices)
+            
 
+            multimodal_VAAL_sampler = query_sampler.AdversarySampler_multimodal(self.args.budget)
+            sampled_indices = multimodal_VAAL_sampler.sample(vae, 
+                                             discriminator, 
+                                             unlabeled_dataloader, unlabeled_indices,
+                                             self.args.device)
 
         elif args.method == "RandomSampling":
             
