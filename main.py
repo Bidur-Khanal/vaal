@@ -185,9 +185,8 @@ def main(args):
         
         args.num_val = 1819
         args.num_images = 18191
-        #args.budget = 818
-        args.budget = 818*2
-        args.initial_budget = 818
+        args.budget = 500
+        args.initial_budget = 500
         #args.budget = 500
         #args.initial_budget = 200
         args.num_classes = 4
