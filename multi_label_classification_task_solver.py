@@ -44,13 +44,12 @@ def train_multilabel_classifier(args,net, train_loader, val_loader, test_loader,
         net.train()
         epoch_loss = 0
         with tqdm(total=len(train_loader)*args.batch_size, desc=f'Epoch {epoch}/{epochs}', unit='img') as pbar:
-            for images, labels in train_loader:
-             
-                images = images.to(device=args.device, dtype=torch.float32)
-                labels = labels.to(device=args.device, dtype=torch.long)
+            for images, labels, depths in train_loader:
                 
-                outputs = net(inputs)
-
+                images = images.to(device=args.device, dtype=torch.float32)
+                labels = labels.to(device=args.device, dtype=torch.double)
+                
+                outputs = net(images)
                 optimizer.zero_grad()
                 loss = criterion(outputs, labels)
                 loss.backward()
@@ -99,7 +98,7 @@ def train_multilabel_classifier(args,net, train_loader, val_loader, test_loader,
 
     net.load_state_dict(torch.load(str(dir_checkpoint)+'/'+args.expt + '/'+ 'checkpoint'+str(split)+'.pth'))
     test_mAP = evaluate(net,test_loader, args.device)
-    wandb_log.log({'test mAP': test_score})
+    wandb_log.log({'test mAP': test_mAP})
     
 
 
@@ -111,14 +110,14 @@ def evaluate(net, dataloader, device):
     all_predictions = []
 
     # iterate over the validation set
-    for image, labels in tqdm(dataloader, total=num_val_batches, desc='Validation round', unit='batch', leave=False):
+    for image, labels, depths in tqdm(dataloader, total=num_val_batches, desc='Validation round', unit='batch', leave=False):
         
         # move images and labels to correct device and type
         image = image.to(device=device, dtype=torch.float32)
-        labels = labels.to(device=device, dtype=torch.long)
+        labels = labels.to(device=device, dtype=torch.double)
        
         with torch.no_grad():
-            outputs = net(inputs)
+            outputs = net(image)
             outputs_no_sig = outputs
             outputs = torch.sigmoid(outputs)
 
