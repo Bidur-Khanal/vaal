@@ -167,8 +167,8 @@ def main(args):
         if min(scale) == 0:
             scale = None
 
-        train_dataset =  LiverSegDataset_Classification("/home/bidur/vaal/data/liver_seg_dataset", scale = scale, flip = False, resize= args.resize,train_pth_file = 'train_classification_files_filtered_gallbladder.npy', test_pth_file = 'test_files_filtered_gallbladder.npy')
-        test_dataset =  LiverSegDataset_Classification("/home/bidur/vaal/data/liver_seg_dataset", train = False, scale = scale, flip = False, resize= args.resize,train_pth_file = 'train_classification_files_filtered_gallbladder.npy', test_pth_file = 'test_files_filtered_gallbladder.npy')
+        train_dataset =  LiverSegDataset_Classification("/home/bidur/vaal/data/liver_seg_dataset", scale = scale, flip = False, resize= args.resize,train_pth_file = 'train_classification_files_filtered_gallbladder.npy', test_pth_file = 'test_classification_files_filtered_gallbladder.npy')
+        test_dataset =  LiverSegDataset_Classification("/home/bidur/vaal/data/liver_seg_dataset", train = False, scale = scale, flip = False, resize= args.resize,train_pth_file = 'train_classification_files_filtered_gallbladder.npy', test_pth_file = 'test_classification_files_filtered_gallbladder.npy')
         
         
         args.num_val = 1819
