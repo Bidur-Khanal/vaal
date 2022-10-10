@@ -146,8 +146,8 @@ def main(args):
         if min(scale) == 0:
             scale = None
 
-        train_dataset = LiverSegDataset_Classification("data/liver_seg_dataset", train = True, train_pth_file = "train_files_classification_filtered_gallbladder_no_less_than_3_classes.npy" )
-        test_dataset = LiverSegDataset_Classification("data/liver_seg_dataset", train = False, test_pth_file = "test_files_classification_filtered_gallbladder_no_less_than_3_classes.npy" )
+        train_dataset = LiverSegDataset_Classification("data/liver_seg_dataset", train = True, scale = scale, flip = False, resize= args.resize,train_pth_file = "train_files_classification_filtered_gallbladder_no_less_than_3_classes.npy" )
+        test_dataset = LiverSegDataset_Classification("data/liver_seg_dataset", train = False, scale = scale, flip = False, resize= args.resize,test_pth_file = "test_files_classification_filtered_gallbladder_no_less_than_3_classes.npy" )
 
         
         
@@ -160,7 +160,25 @@ def main(args):
         args.initial_budget = 500
 
         args.num_classes = 4
-   
+
+    elif args.dataset == 'classification-liver-seg-gallbladder-removed':
+        
+        scale = tuple(float(i) for i in args.scale.split(","))
+        if min(scale) == 0:
+            scale = None
+
+        train_dataset =  LiverSegDataset_Classification("/home/bidur/vaal/data/liver_seg_dataset", scale = scale, flip = False, resize= args.resize,train_pth_file = 'train_classification_files_filtered_gallbladder.npy', test_pth_file = 'test_files_filtered_gallbladder.npy')
+        test_dataset =  LiverSegDataset_Classification("/home/bidur/vaal/data/liver_seg_dataset", train = False, scale = scale, flip = False, resize= args.resize,train_pth_file = 'train_classification_files_filtered_gallbladder.npy', test_pth_file = 'test_files_filtered_gallbladder.npy')
+        
+        
+        args.num_val = 1819
+        args.num_images = 18191
+        #args.budget = 818
+        args.budget = 818*2
+        args.initial_budget = 818
+        #args.budget = 500
+        #args.initial_budget = 200
+        args.num_classes = 4
 
     else:
         raise NotImplementedError
