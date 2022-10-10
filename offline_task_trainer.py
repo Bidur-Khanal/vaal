@@ -25,6 +25,7 @@ from multi_label_classification_task_solver import train_multilabel_classifier
 import wandb
 import torch.backends.cudnn as cudnn
 
+
 ## Set Seed
 def fix_seed(seed):
     # random
@@ -210,8 +211,8 @@ def main(args):
     args.device = torch.device('cuda:'+args.gpu_id if torch.cuda.is_available() else 'cpu')
    
 
-    splits = [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4]
-    #splits = [0.05, 0.15, 0.25, 0.35, 0.45, 0.55]
+    #splits = [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4]
+    splits = [0.05, 0.15, 0.25, 0.35, 0.45, 0.55]
     
     current_indices = list(initial_indices)
     for i, split in enumerate(splits):
@@ -262,22 +263,22 @@ def main(args):
             vae = model.VAE(args.latent_dim)
 
             # load the checkpoint models
-            discriminator.load_state_dict(torch.load('./checkpoints/'+'/'+self.args.expt + 
-                                        '/'+ 'discriminator_checkpoint'+str(current_split)+'.pth'))
-            vae.load_state_dict(torch.load('./checkpoints/'+'/'+self.args.expt + 
-                                        '/'+ 'vae_checkpoint'+str(current_split)+'.pth'))
+            discriminator.load_state_dict(torch.load('./checkpoints/'+'/'+args.expt + 
+                                        '/'+ 'discriminator_checkpoint'+str(split)+'.pth'))
+            vae.load_state_dict(torch.load('./checkpoints/'+'/'+args.expt + 
+                                        '/'+ 'vae_checkpoint'+str(split)+'.pth'))
  
             # send model to gpu
             discriminator = discriminator.to(device = args.device)
             vae = vae.to(device = args.device)
             
-            VAAL_sampler = query_sampler.AdversarySampler(self.args.budget)
+            VAAL_sampler = query_Sampler.AdversarySampler(args.budget)
 
 
             sampled_indices = VAAL_sampler.sample(vae, 
                                              discriminator, 
                                              unlabeled_dataloader, unlabeled_indices,
-                                             self.args.device)
+                                             args.device)
 
 
         elif args.method == 'multimodal_VAAL':
@@ -287,10 +288,10 @@ def main(args):
             discriminator = multi_modal_model.Discriminator(args.latent_dim)
 
             # load the checkpoint models
-            discriminator.load_state_dict(torch.load('./checkpoints/'+'/'+self.args.expt + 
-                                        '/'+ 'discriminator_checkpoint'+str(current_split)+'.pth'))
-            vae.load_state_dict(torch.load('./checkpoints/'+'/'+self.args.expt + 
-                                        '/'+ 'vae_checkpoint'+str(current_split)+'.pth'))
+            discriminator.load_state_dict(torch.load('./checkpoints/'+'/'+args.expt + 
+                                        '/'+ 'discriminator_checkpoint'+str(split)+'.pth'))
+            vae.load_state_dict(torch.load('./checkpoints/'+'/'+args.expt + 
+                                        '/'+ 'vae_checkpoint'+str(split)+'.pth'))
 
             # send the model to gpu
             vae = vae.to(device = args.device)
@@ -298,11 +299,11 @@ def main(args):
 
             
 
-            multimodal_VAAL_sampler = query_sampler.AdversarySampler_multimodal(self.args.budget)
+            multimodal_VAAL_sampler = query_Sampler.AdversarySampler_multimodal(args.budget)
             sampled_indices = multimodal_VAAL_sampler.sample(vae, 
                                              discriminator, 
                                              unlabeled_dataloader, unlabeled_indices,
-                                             self.args.device)
+                                             args.device)
 
         elif args.method == "RandomSampling":
             
