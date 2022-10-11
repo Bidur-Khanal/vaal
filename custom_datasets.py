@@ -188,7 +188,7 @@ def preprocess(image, mask, depth= None, transform = None, target_transform = No
 class LiverSegDataset_Gallbladder_Removed(Dataset):
 
 
-    def __init__(self, root_dir, train = True, flip=False, resize = None, scale= None, crop=None, train_pth_file = 'train_files.npy', test_pth_file = 'test_files.npy'):
+    def __init__(self, root_dir, train = True, flip=False, resize = None, scale= None, crop=None, translated_input = True, train_pth_file = 'train_files.npy', test_pth_file = 'test_files.npy'):
 
         # Based on https://github.com/mcordts/cityscapesScripts
         Seg_classes = namedtuple('Class', ['name', 'train_id','color', 'color_name'])
@@ -210,7 +210,11 @@ class LiverSegDataset_Gallbladder_Removed(Dataset):
         self.crop = crop
 
         self.root_dir = root_dir
-        self.image_dir = 'translation_random_views/random_views'
+        if translated_input:
+            self.image_dir = 'translation_random_views/random_views'
+        else:
+            self.image_dir = "input_random_views/random_views"
+        self.depth_map_dir = 'depth_random_views/random_views'
         self.mask_dir = 'segmentation_random_views/random_views'
         self.depth_map_dir = 'depth_random_views/random_views'
         
@@ -299,7 +303,7 @@ class LiverSegDataset_Gallbladder_Removed(Dataset):
 class LiverSegDataset_2_classes(Dataset):
 
 
-    def __init__(self, root_dir, train = True, flip=False, resize = None, scale= None, crop=None, train_pth_file = 'train_files.npy', test_pth_file = 'test_files.npy'):
+    def __init__(self, root_dir, train = True, flip=False, resize = None, scale= None, crop=None, translated_input = True, train_pth_file = 'train_files.npy', test_pth_file = 'test_files.npy'):
 
         # Based on https://github.com/mcordts/cityscapesScripts
         Seg_classes = namedtuple('Class', ['name', 'train_id','color', 'color_name'])
@@ -321,7 +325,11 @@ class LiverSegDataset_2_classes(Dataset):
         self.crop = crop
 
         self.root_dir = root_dir
-        self.image_dir = 'translation_random_views/random_views'
+        if translated_input:
+            self.image_dir = 'translation_random_views/random_views'
+        else:
+            self.image_dir = "input_random_views/random_views"
+        self.depth_map_dir = 'depth_random_views/random_views'
         self.mask_dir = 'segmentation_random_views/random_views'
         self.depth_map_dir = 'depth_random_views/random_views'
         
@@ -411,7 +419,7 @@ class LiverSegDataset_2_classes(Dataset):
 
 class LiverSegDataset_Classification(Dataset):
 
-    def __init__(self, root_dir, train = True, flip=False, resize = None, scale= None, crop=None, train_pth_file = 'train_files.npy', test_pth_file = 'test_files.npy'):
+    def __init__(self, root_dir, train = True, flip=False, resize = None, scale= None, crop=None, translated_input = True, train_pth_file = 'train_files.npy', test_pth_file = 'test_files.npy'):
 
     
         self.flip = flip
@@ -420,7 +428,10 @@ class LiverSegDataset_Classification(Dataset):
         self.crop = crop
 
         self.root_dir = root_dir
-        self.image_dir = 'translation_random_views/random_views'
+        if translated_input:
+            self.image_dir = 'translation_random_views/random_views'
+        else:
+            self.image_dir = "input_random_views/random_views"
         self.depth_map_dir = 'depth_random_views/random_views'
         
         self.transform_x = transforms.Compose([
