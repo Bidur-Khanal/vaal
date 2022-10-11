@@ -1,6 +1,6 @@
 #! bin bash -l
 
-job_File="rendered_sbatch_run.sh" 
+job_File="rendered_sbatch_run_classification.sh" 
 dir="sbatch_log/rendered_classification_dataset_liver_seg_gallbladder_filtered"
 adversary_param=$"10"
 num_vae_steps=$"2"

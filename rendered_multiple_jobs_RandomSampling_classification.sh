@@ -1,6 +1,6 @@
 #! bin bash -l
 
-job_File="rendered_sbatch_vaal_and_randomsampling.sh" 
+job_File="rendered_sbatch_vaal_and_randomsampling_classification.sh" 
 dir="sbatch_log/rendered_classification_dataset_liver_seg_gallbladder_filtered"
 
 adversary_param=$"10"

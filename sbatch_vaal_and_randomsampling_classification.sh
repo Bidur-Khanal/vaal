@@ -9,7 +9,7 @@
 module purge
 conda activate dplearning
 Scale=$"0,0"
-Resize=$"128"
+Resize=$"256"
 
 
 Dataset=$"classification-liver-seg-gallbladder-removed"
