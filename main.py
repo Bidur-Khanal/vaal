@@ -265,8 +265,10 @@ def main(args):
     val_indices = random.sample(all_indices, args.num_val)
     all_indices = np.setdiff1d(list(all_indices), val_indices)
 
-
-    initial_indices = random.sample(list(all_indices), args.initial_budget)
+    if args.train_full:
+        initial_indices = all_indices.tolist()
+    else:
+        initial_indices = random.sample(list(all_indices), args.initial_budget)
     sampler = data.sampler.SubsetRandomSampler(initial_indices)
     val_sampler = data.sampler.SubsetRandomSampler(val_indices)
 
@@ -319,7 +321,9 @@ def main(args):
               learning_rate=args.lr,
               wandb_log= experiment, split = split)
 
-
+        if args.train_full:
+            break
+        
         ## all unlabeled train samples
         unlabeled_indices = np.setdiff1d(list(all_indices), current_indices)
         unlabeled_sampler = data.sampler.SubsetRandomSampler(unlabeled_indices)

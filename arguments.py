@@ -54,6 +54,7 @@ def get_args():
                         help='Learning rate', dest='lr')
     parser.add_argument('--resize', type=int, default=0, help='fix_resize')
     parser.add_argument('--scale', type=str, default= "0,0", help='scale the image')
+    parser.add_argument('--train_full', action ='store_true', default = False, help = "train the whole dataset")
 
     # segmentation task related
     parser.add_argument('--amp', action='store_true', default=False, help='Use mixed precision')
