@@ -128,10 +128,10 @@ def main(args):
         
         
         args.num_val = 1548
-        args.num_images = 15482
+        args.num_images = int(15482/3)
         #args.budget = 774
         #args.budget = 200
-        args.budget = 500
+        args.budget = 200
         #args.initial_budget = 774
         args.initial_budget = 500
 
@@ -209,10 +209,10 @@ def main(args):
         
         
         args.num_val = 1548
-        args.num_images = 15482
+        args.num_images = int(15482/3)
         #args.budget = 774
         #args.budget = 200
-        args.budget = 500
+        args.budget = 200
         #args.initial_budget = 774
         args.initial_budget = 500
 
@@ -247,9 +247,9 @@ def main(args):
         
         
         args.num_val = 1819
-        args.num_images = 18191
+        args.num_images = int(18191/3)
         #args.budget = 818
-        args.budget = 500
+        args.budget = 200
         args.initial_budget = 500
         #args.budget = 500
         #args.initial_budget = 200
