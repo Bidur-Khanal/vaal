@@ -1,4 +1,5 @@
 from multimodal_VAAL_solver import multi_modal_VAAL_Solver
+from multimodal_VAAL_solver2 import multi_modal_VAAL_Solver2
 import torch
 from torchvision import datasets, transforms
 import torchvision.models as torch_models
@@ -13,6 +14,7 @@ import os
 from custom_datasets import *
 import model
 import multi_modal_model
+import multi_modal_model2
 import vgg
 from VAAL_solver import VAAL_Solver
 from utils import *
@@ -323,7 +325,7 @@ def main(args):
 
         if args.train_full:
             break
-        
+
         ## all unlabeled train samples
         unlabeled_indices = np.setdiff1d(list(all_indices), current_indices)
         unlabeled_sampler = data.sampler.SubsetRandomSampler(unlabeled_indices)
@@ -368,6 +370,38 @@ def main(args):
                                                 discriminator,
                                                 unlabeled_dataloader)
             sampled_indices = multimodal_VAAL_solver.sample_for_labeling(vae, discriminator, unlabeled_dataloader, unlabeled_indices)
+
+
+        elif args.method == 'multimodal_VAAL2':
+            
+            #### initilaize the VAAL models
+            multimodal_VAAL_solver2 = multi_modal_VAAL_Solver2(args,test_dataloader)
+            vae_image = multi_modal_model2.VAEimage(args.latent_dim)
+            discriminator_image = multi_modal_model.Discriminator(args.latent_dim)
+            vae_depth = multi_modal_model2.VAEdepth(args.latent_dim)
+            discriminator_depth = multi_modal_model.Discriminator(args.latent_dim)
+
+            vae_image = vae_image.to(device = args.device)
+            discriminator_image = discriminator_image.to(device = args.device)
+
+            vae_depth = vae_depth.to(device = args.device)
+            discriminator_depth = discriminator_depth.to(device = args.device)
+
+            # train the models on the current data
+            vae_image, discriminator_image = multimodal_VAAL_solver2.train(split,querry_dataloader,
+                                                val_dataloader,
+                                                vae_image, 
+                                                discriminator_image,
+                                                unlabeled_dataloader)
+
+            vae_depth, discriminator_depth = multimodal_VAAL_solver2.train(split,querry_dataloader,
+                                                val_dataloader,
+                                                vae_depth, 
+                                                discriminator_depth,
+                                                unlabeled_dataloader)
+
+
+            sampled_indices = multimodal_VAAL_solver2.sample_for_labeling(vae_image, discriminator_image, vae_depth, vae_depth, unlabeled_dataloader, unlabeled_indices)
 
 
         elif args.method == "RandomSampling":

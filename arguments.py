@@ -30,7 +30,8 @@ def get_args():
                              "KCenterGreedy", 
                              "BALDDropout", 
                              "VAAL",
-                             "multimodal_VAAL"], help="query strategy")
+                             "multimodal_VAAL",
+                             "multimodal_VAAL2"], help="query strategy")
 
     # VAAL related 
     parser.add_argument('--latent_dim', type=int, default=64, help='The dimensionality of the VAE latent dimension')
