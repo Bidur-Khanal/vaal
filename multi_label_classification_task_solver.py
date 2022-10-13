@@ -28,72 +28,74 @@ def train_multilabel_classifier(args,net, train_loader, val_loader, test_loader,
     if min(scale) == 0:
         scale = None
 
-    best_val_mAP = 0.0
+    if not os.path.exists(str(dir_checkpoint)+'/'+args.expt + '/'+ 'checkpoint'+str(split)+'.pth'):
 
+        best_val_mAP = 0.0
+
+        
+        # 4. Set up the optimizer, the loss, the learning rate scheduler 
+        optimizer = optim.SGD(net.parameters(), lr=learning_rate, weight_decay=5e-4, momentum=0.9)
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs)
     
-    # 4. Set up the optimizer, the loss, the learning rate scheduler 
-    optimizer = optim.SGD(net.parameters(), lr=learning_rate, weight_decay=5e-4, momentum=0.9)
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs)
-   
-    criterion = nn.BCEWithLogitsLoss()
-    global_step = 0
-    
+        criterion = nn.BCEWithLogitsLoss()
+        global_step = 0
+        
 
-    # 5. Begin training
-    for epoch in range(1, epochs+1):
-        net.train()
-        epoch_loss = 0
-        with tqdm(total=len(train_loader)*args.batch_size, desc=f'Epoch {epoch}/{epochs}', unit='img') as pbar:
-            for images, labels, depths in train_loader:
-                
-                images = images.to(device=args.device, dtype=torch.float32)
-                labels = labels.to(device=args.device, dtype=torch.double)
-                
-                outputs = net(images)
-                optimizer.zero_grad()
-                loss = criterion(outputs, labels)
-                loss.backward()
-                optimizer.step()
+        # 5. Begin training
+        for epoch in range(1, epochs+1):
+            net.train()
+            epoch_loss = 0
+            with tqdm(total=len(train_loader)*args.batch_size, desc=f'Epoch {epoch}/{epochs}', unit='img') as pbar:
+                for images, labels, depths in train_loader:
+                    
+                    images = images.to(device=args.device, dtype=torch.float32)
+                    labels = labels.to(device=args.device, dtype=torch.double)
+                    
+                    outputs = net(images)
+                    optimizer.zero_grad()
+                    loss = criterion(outputs, labels)
+                    loss.backward()
+                    optimizer.step()
 
-                outputs_no_sig = outputs
-                outputs = torch.sigmoid(outputs) 
-                
-                epoch_loss += loss.item()
-                pbar.update(images.shape[0])
-                global_step += 1
-                wandb.log({
-                    'train loss': loss.item(),
-                    'step': global_step,
-                    'epoch': epoch
-                })
-                pbar.set_postfix(**{'loss (batch)': loss.item()})
+                    outputs_no_sig = outputs
+                    outputs = torch.sigmoid(outputs) 
+                    
+                    epoch_loss += loss.item()
+                    pbar.update(images.shape[0])
+                    global_step += 1
+                    wandb.log({
+                        'train loss': loss.item(),
+                        'step': global_step,
+                        'epoch': epoch
+                    })
+                    pbar.set_postfix(**{'loss (batch)': loss.item()})
 
-        ### Evaluation round
-        histograms = {}
-        for tag, value in net.named_parameters():
-            tag = tag.replace('/', '.')
-            histograms['Weights/' + tag] = wandb.Histogram(value.data.cpu())
-            histograms['Gradients/' + tag] = wandb.Histogram(value.grad.data.cpu())
+            ### Evaluation round
+            histograms = {}
+            for tag, value in net.named_parameters():
+                tag = tag.replace('/', '.')
+                histograms['Weights/' + tag] = wandb.Histogram(value.data.cpu())
+                histograms['Gradients/' + tag] = wandb.Histogram(value.grad.data.cpu())
 
 
-        val_mAP = evaluate(net,val_loader, args.device)
-        scheduler.step()
+            val_mAP = evaluate(net,val_loader, args.device)
+            scheduler.step()
 
-        logging.info('Validation mAP: {}'.format(val_mAP))
-        wandb_log.log({
-            'learning rate': optimizer.param_groups[0]['lr'],
-            'validation mAP': val_mAP,
-            'step': global_step,
-            'epoch': epoch,
-            **histograms
-        })       
+            logging.info('Validation mAP: {}'.format(val_mAP))
+            wandb_log.log({
+                'learning rate': optimizer.param_groups[0]['lr'],
+                'validation mAP': val_mAP,
+                'step': global_step,
+                'epoch': epoch,
+                **histograms
+            })       
 
-        if best_val_mAP < val_mAP:
-            best_val_mAP = val_mAP
-            if save_checkpoint:
-                Path(str(dir_checkpoint)+'/'+args.expt).mkdir(parents=True, exist_ok=True)
-                torch.save(net.state_dict(), str(dir_checkpoint)+'/'+args.expt + '/'+ 'checkpoint'+str(split)+'.pth')
-                logging.info(f'Checkpoint {epoch} saved!')
+            if best_val_mAP < val_mAP:
+                best_val_mAP = val_mAP
+                if save_checkpoint:
+                    Path(str(dir_checkpoint)+'/'+args.expt).mkdir(parents=True, exist_ok=True)
+                    torch.save(net.state_dict(), str(dir_checkpoint)+'/'+args.expt + '/'+ 'checkpoint'+str(split)+'.pth')
+                    logging.info(f'Checkpoint {epoch} saved!')
             
 
     net.load_state_dict(torch.load(str(dir_checkpoint)+'/'+args.expt + '/'+ 'checkpoint'+str(split)+'.pth'))
