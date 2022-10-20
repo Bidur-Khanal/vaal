@@ -117,6 +117,23 @@ def main(args):
         args.num_classes = 4
 
 
+    elif args.dataset == 'liver-seg-gallbladder-removed-class-no-less-than-3-small':
+       
+        scale = tuple(float(i) for i in args.scale.split(","))
+        if min(scale) == 0:
+            scale = None
+
+        train_dataset =  LiverSegDataset_Gallbladder_Removed("/home/bidur/vaal/data/liver_seg_dataset", scale = scale, flip = False, resize= args.resize,train_pth_file = 'train_files_filtered_gallbladder_no_less_than_3_classes_curated_3000.npy', test_pth_file = 'test_files_filtered_gallbladder_no_less_than_3_classes_curated_3000.npy')
+        test_dataset =  LiverSegDataset_Gallbladder_Removed("/home/bidur/vaal/data/liver_seg_dataset", train = False, scale = scale, flip = False, resize= args.resize,train_pth_file = 'train_files_filtered_gallbladder_no_less_than_3_classes_curated_3000.npy', test_pth_file = 'test_files_filtered_gallbladder_no_less_than_3_classes_curated_3000.npy')
+        
+        
+        args.num_val = 500
+        args.num_images = 3000
+        args.budget = 200
+        args.initial_budget = 200
+        args.num_classes = 4
+
+
     elif args.dataset == 'liver-seg-gallbladder-removed-class-no-less-than-3-rendered':
        
         scale = tuple(float(i) for i in args.scale.split(","))
@@ -234,6 +251,24 @@ def main(args):
         args.initial_budget = 500
         #args.budget = 500
         #args.initial_budget = 200
+        args.num_classes = 4
+
+
+
+    elif args.dataset == 'classification-liver-seg-gallbladder-removed-small':
+        
+        scale = tuple(float(i) for i in args.scale.split(","))
+        if min(scale) == 0:
+            scale = None
+
+        train_dataset =  LiverSegDataset_Classification("/home/bidur/vaal/data/liver_seg_dataset", scale = scale, flip = False, resize= args.resize,train_pth_file = 'train_classification_files_filtered_gallbladder_curated_3000.npy', test_pth_file = 'test_classification_files_filtered_gallbladder_curated_3000.npy')
+        test_dataset =  LiverSegDataset_Classification("/home/bidur/vaal/data/liver_seg_dataset", train = False, scale = scale, flip = False, resize= args.resize,train_pth_file = 'train_classification_files_filtered_gallbladder_curated_3000.npy', test_pth_file = 'test_classification_files_filtered_gallbladder_curated_3000.npy')
+        
+        
+        args.num_val = 500
+        args.num_images = 3000
+        args.budget = 200
+        args.initial_budget = 200
         args.num_classes = 4
 
     elif args.dataset == 'rendered-classification-liver-seg-gallbladder-removed':
