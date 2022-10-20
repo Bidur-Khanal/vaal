@@ -35,6 +35,7 @@
 job_File="sbatch_run.sh" 
 # dir="sbatch_log/small_dataset_liver_seg"
 # dir="sbatch_log/dataset_liver_seg_mse_2"
+# dir="sbatch_log/dataset_liver_seg_gallbladder_removed_class_no_less_than_3_small"
 dir="sbatch_log/dataset_liver_seg_gallbladder_removed_class_no_less_than_3_small"
 adversary_param=$"25"
 num_vae_steps=$"2"

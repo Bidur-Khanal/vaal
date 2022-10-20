@@ -12,6 +12,7 @@ def get_args():
     parser.add_argument('--seed', type=int, default=0, help='use a random seed')
     parser.add_argument('--random_sampling_seed', type=int, default=0, help='use a random seed')
     parser.add_argument('--data_path', type=str, default='./data', help='Path to where the data is')
+    parser.add_argument('--with_replacement', action='store_true', default=False, help='replace the sample into into the unlabelled pool')
 
 
 
@@ -31,7 +32,8 @@ def get_args():
                              "BALDDropout", 
                              "VAAL",
                              "multimodal_VAAL",
-                             "multimodal_VAAL2"], help="query strategy")
+                             "multimodal_VAAL2",
+                             "depth_VAAL"], help="query strategy")
 
     # VAAL related 
     parser.add_argument('--latent_dim', type=int, default=64, help='The dimensionality of the VAE latent dimension')
@@ -43,6 +45,7 @@ def get_args():
     parser.add_argument('--adversary_param', type=float, default=10, help='Hyperparameter for training. lambda2 in the paper')
     parser.add_argument('--mse_gamma1', type=float, default=1, help='Hyperparameter for training. Weight of RGB reconstriction error')
     parser.add_argument('--mse_gamma2', type=float, default=1, help='Hyperparameter for training. Weight of depth reconstruciton error')
+    parser.add_argument('--adaptive_mse', action ='store_true', default = False, help = "use an adaptive formula to ajust the mse for depth")
 
 
 

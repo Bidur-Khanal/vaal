@@ -1,5 +1,6 @@
 from multimodal_VAAL_solver import multi_modal_VAAL_Solver
 from multimodal_VAAL_solver2 import multi_modal_VAAL_Solver2
+from depth_VAAL_solver import Depth_VAAL_Solver
 import torch
 from torchvision import datasets, transforms
 import torchvision.models as torch_models
@@ -15,6 +16,7 @@ from custom_datasets import *
 import model
 import multi_modal_model
 import multi_modal_model2
+import depth_VAAL_model
 import vgg
 from VAAL_solver import VAAL_Solver
 from utils import *
@@ -330,6 +332,9 @@ def main(args):
     for i, split in enumerate(splits):
 
 
+        args.split_step = i
+        if args.with_replacement:
+            args.budget = args.budget * (i+1) 
         # need to retrain all the models on the new images
         # re initialize and retrain the models
         # task_model = vgg.vgg16_bn(num_classes=args.num_classes)
@@ -439,6 +444,25 @@ def main(args):
 
             sampled_indices = multimodal_VAAL_solver2.sample_for_labeling(vae_image, discriminator_image, vae_depth, vae_depth, unlabeled_dataloader, unlabeled_indices)
 
+        elif args.method == 'depth_VAAL':
+            
+            #### initilaize the VAAL models
+            depth_vaal_solver = Depth_VAAL_Solver(args,test_dataloader)
+            
+            vae_depth = depth_VAAL_model.VAEdepth(args.latent_dim)
+            discriminator_depth = depth_VAAL_model.Discriminator(args.latent_dim)
+
+            vae_depth = vae_depth.to(device = args.device)
+            discriminator_depth = discriminator_depth.to(device = args.device)
+
+            vae_depth, discriminator_depth = depth_vaal_solver.train(split,querry_dataloader,
+                                                val_dataloader,
+                                                vae_depth, 
+                                                discriminator_depth,
+                                                unlabeled_dataloader)
+
+
+            sampled_indices = depth_vaal_solver.sample_for_labeling(vae_depth, vae_depth, unlabeled_dataloader, unlabeled_indices)
 
         elif args.method == "RandomSampling":
             
@@ -446,7 +470,10 @@ def main(args):
             random.shuffle(unlabeled_indices)
             sampled_indices = unlabeled_indices[:args.budget]
 
-        current_indices = list(current_indices) + list(sampled_indices)
+        if args.with_replacement:
+            current_indices = list(initial_indices) + list(sampled_indices)
+        else:
+            current_indices = list(current_indices) + list(sampled_indices)
         sampler = data.sampler.SubsetRandomSampler(current_indices)
         querry_dataloader = data.DataLoader(train_dataset, sampler=sampler, 
                 batch_size=args.batch_size, drop_last=True)

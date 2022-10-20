@@ -17,5 +17,8 @@ Resize=$"256"
 # Dataset=$"liver-seg-gallbladder-removed-class-no-less-than-3"
 # srun -n 1 python3 main.py --scale $Scale --resize $Resize --expt $EXPT --dataset $Dataset --method $METHOD --adversary_param $ADVER_PARAM --random_sampling_seed $RAND_SAM_SEED --num_vae_steps $NUM_VAE --seed $SEED --query_train_epochs 40 --train_full
 
-Dataset=$"liver-seg-gallbladder-removed-class-no-less-than-3-removed-small"
-srun -n 1 python3 main.py --scale $Scale --resize $Resize --expt $EXPT --dataset $Dataset --method $METHOD --adversary_param $ADVER_PARAM --random_sampling_seed $RAND_SAM_SEED --num_vae_steps $NUM_VAE --seed $SEED --query_train_epochs 40 --train_full
+# Dataset=$"liver-seg-gallbladder-removed-class-no-less-than-3-small"
+# srun -n 1 python3 main.py --scale $Scale --resize $Resize --expt $EXPT --dataset $Dataset --method $METHOD --adversary_param $ADVER_PARAM --random_sampling_seed $RAND_SAM_SEED --num_vae_steps $NUM_VAE --seed $SEED --query_train_epochs 40 --train_full
+
+Dataset=$"liver-seg-gallbladder-removed-class-no-less-than-3-small"
+srun -n 1 python3 main.py --scale $Scale --resize $Resize --expt $EXPT --dataset $Dataset --method $METHOD --adversary_param $ADVER_PARAM --random_sampling_seed $RAND_SAM_SEED --num_vae_steps $NUM_VAE --seed $SEED --query_train_epochs 50 --adaptive_mse
