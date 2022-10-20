@@ -35,14 +35,14 @@
 job_File="sbatch_run.sh" 
 # dir="sbatch_log/small_dataset_liver_seg"
 # dir="sbatch_log/dataset_liver_seg_mse_2"
-dir="sbatch_log/dataset_liver_seg_gallbladder_removed_class_no_less_than_3"
+dir="sbatch_log/dataset_liver_seg_gallbladder_removed_class_no_less_than_3_small"
 adversary_param=$"25"
 num_vae_steps=$"2"
 for seed in 0 255 1000
 do
     for mse_gamma in 0.2 0.4 0.8 1
     do 
-        EXPT=dataset_liver_seg_gallbladder_removed_class_no_less_than_3_EXPT_MULTI_VAAL_adver"$adversary_param"_mse"$mse_gamma"_Seed"$seed"
+        EXPT=small_dataset_liver_seg_gallbladder_removed_class_no_less_than_3_EXPT_MULTI_VAAL_adver"$adversary_param"_mse"$mse_gamma"_Seed"$seed"
         STD=$dir/STD_MULTI_VAAL_adver"$adversary_param"_mse"$mse_gamma"_Seed"$seed".out
         ERR=$dir/ERR_MULTI_VAAL_adver"$adversary_param"_mse"$mse_gamma"_Seed"$seed".err
         METHOD="multimodal_VAAL"
@@ -60,6 +60,6 @@ do
         export RAND_SAM_SEED;
         export SEED;
 
-        sbatch -J $EXPT -o $STD -t 04-05:00:00 -e $ERR $job_File   
+        sbatch -J $EXPT -o $STD -t 02-00:00:00 -e $ERR $job_File   
     done;
 done;

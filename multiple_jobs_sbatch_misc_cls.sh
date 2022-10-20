@@ -1,13 +1,13 @@
 #! bin bash -l
 
 job_File="sbatch_misc_cls.sh" 
-dir="sbatch_log/classification_dataset_liver_seg_gallbladder_filtered"
+dir="sbatch_log/classification_dataset_liver_seg_gallbladder_filtered_small"
 
 adversary_param=$"10"
 num_vae_steps=$"2"
 seed=$"0"
 
-EXPT=classification_dataset_liver_seg_gallbladder_removed_full_train_seed_"$seed"
+EXPT=small_classification_dataset_liver_seg_gallbladder_removed_full_train_seed_"$seed"
 STD=$dir/STD_full_train_seed_"$seed".out
 ERR=$dir/ERR_full_train_seed_"$seed".err
 METHOD="RandomSampling"
@@ -25,4 +25,4 @@ export RAND_SAM_SEED;
 export SEED;
 
 
-sbatch -J $EXPT -o $STD -t 00-10:00:00 -e $ERR $job_File
+sbatch -J $EXPT -o $STD -t 00-05:00:00 -e $ERR $job_File

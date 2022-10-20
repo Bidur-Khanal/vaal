@@ -4,7 +4,7 @@ job_File="sbatch_misc_seg.sh"
 # dir="sbatch_log/small_dataset_liver_seg"
 # dir="sbatch_log/dataset_liver_seg_mse_2"
 # dir ="sbatch_log/dataset_liver_seg_gallbladder_filtered"
-dir="sbatch_log/dataset_liver_seg_gallbladder_removed_class_no_less_than_3"
+dir="sbatch_log/dataset_liver_seg_gallbladder_removed_class_no_less_than_3_small"
 # dir="sbatch_log/dataset_liver_seg_gallbladder_filtered_10_percent_gap"
 
 # RAND_SAM_SEED=$"1000"
@@ -20,7 +20,7 @@ num_vae_steps=$"2"
 seed=$"0"
 
 
-EXPT=dataset_liver_seg_gallbladder_removed_class_no_less_than_3_EXPT_full_train_seed_"$seed"
+EXPT=small_dataset_liver_seg_gallbladder_removed_class_no_less_than_3_EXPT_full_train_seed_"$seed"
 STD=$dir/STD_full_train_seed_"$seed".out
 ERR=$dir/ERR_full_train_seed_"$seed".err
 METHOD="RandomSampling"
@@ -37,4 +37,4 @@ export NUM_VAE;
 export RAND_SAM_SEED;
 export SEED;
 
-sbatch -J $EXPT -o $STD -t 00-15:00:00 -e $ERR $job_File
+sbatch -J $EXPT -o $STD -t 00-07:00:00 -e $ERR $job_File
