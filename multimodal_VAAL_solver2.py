@@ -25,24 +25,34 @@ class multi_modal_VAAL_Solver2:
         self.sampler = sampler.AdversarySampler_multimodal2(self.args.budget)
 
 
-    def read_data(self, dataloader, labels=True):
-        if labels:
-            while True:
-                for img, label, depth in dataloader:
-                    yield img, label
-        else:
-            while True:
-                for img, _, _ in dataloader:
-                    yield img
+    def read_data(self, dataloader, labels=True, recons = "image"):
+        if recons == "image":
+            if labels:
+                while True:
+                    for img, label, depth in dataloader:
+                        yield img, label
+            else:
+                while True:
+                    for img, _, _ in dataloader:
+                        yield img
+        elif recons == "depth":
+            if labels:
+                while True:
+                    for img, label, depth in dataloader:
+                        yield img, depth, label 
+            else:
+                while True:
+                    for img, _, depth in dataloader:
+                        yield img, depth
 
 
-    def train(self, current_split, querry_dataloader, val_dataloader, vae, discriminator, unlabeled_dataloader):
+    def train(self, current_split, querry_dataloader, val_dataloader, vae, discriminator, unlabeled_dataloader, recons ="image"):
         self.args.train_iterations = (self.args.num_images* self.args.query_train_epochs) // self.args.batch_size
         #self.args.train_iterations = int(((self.args.budget*current_split+ self.args.initial_budget) * self.args.query_train_epochs)/self.args.batch_size)
         
         
-        labeled_data = self.read_data(querry_dataloader)
-        unlabeled_data = self.read_data(unlabeled_dataloader, labels=False)
+        labeled_data = self.read_data(querry_dataloader, recons= recons)
+        unlabeled_data = self.read_data(unlabeled_dataloader, labels=False, recons= recons)
 
         optim_vae = optim.Adam(vae.parameters(), lr=self.args.alpha1)
         optim_discriminator = optim.Adam(discriminator.parameters(), lr=self.args.alpha2)
@@ -54,23 +64,43 @@ class multi_modal_VAAL_Solver2:
         
         for iter_count in range(self.args.train_iterations):
            
-            labeled_imgs, labels = next(labeled_data)
-            unlabeled_imgs = next(unlabeled_data)
+            if recons == "image":
+                labeled_imgs, labels = next(labeled_data)
+                unlabeled_imgs = next(unlabeled_data)
+            
+                labeled_imgs = labeled_imgs.to(device=self.args.device, dtype=torch.float32)
+                unlabeled_imgs = unlabeled_imgs.to(device=self.args.device, dtype=torch.float32)
+                labels = labels.to(device=self.args.device, dtype=torch.long)
 
-        
-            labeled_imgs = labeled_imgs.to(device=self.args.device, dtype=torch.float32)
-            unlabeled_imgs = unlabeled_imgs.to(device=self.args.device, dtype=torch.float32)
-            labels = labels.to(device=self.args.device, dtype=torch.long)
+            elif recons == "depth":
 
+                labeled_imgs, labeled_depths, labels = next(labeled_data)
+                unlabeled_imgs, unlabeled_depths = next(unlabeled_data)
+            
+                labeled_imgs = labeled_imgs.to(device=self.args.device, dtype=torch.float32)
+                labeled_depths = labeled_depths.to(device=self.args.device, dtype=torch.float32)
 
-
+                unlabeled_imgs = unlabeled_imgs.to(device=self.args.device, dtype=torch.float32)
+                unlabeled_depths = unlabeled_depths.to(device=self.args.device, dtype=torch.float32)
+                labels = labels.to(device=self.args.device, dtype=torch.long)
+           
             # VAE step
             for count in range(self.args.num_vae_steps):
-                recon, z, mu, logvar = vae(labeled_imgs)
-                unsup_loss = self.vae_loss(labeled_imgs, recon, mu, logvar, self.args.beta)
-                unlab_recon, unlab_z, unlab_mu, unlab_logvar = vae(unlabeled_imgs)
-                transductive_loss = self.vae_loss(unlabeled_imgs, 
-                        unlab_recon, unlab_mu, unlab_logvar, self.args.beta)
+
+                if recons == "image":
+                    recon, z, mu, logvar = vae(labeled_imgs)
+                    unsup_loss = self.vae_loss(labeled_imgs, recon, mu, logvar, self.args.beta)
+                    unlab_recon, unlab_z, unlab_mu, unlab_logvar = vae(unlabeled_imgs)
+                    transductive_loss = self.vae_loss(unlabeled_imgs, 
+                            unlab_recon, unlab_mu, unlab_logvar, self.args.beta)
+
+                elif recons == "depth":
+
+                    recon, z, mu, logvar = vae(labeled_imgs)
+                    unsup_loss = self.vae_loss(labeled_depths, recon, mu, logvar, self.args.beta)
+                    unlab_recon, unlab_z, unlab_mu, unlab_logvar = vae(unlabeled_imgs)
+                    transductive_loss = self.vae_loss(unlabeled_depths, 
+                            unlab_recon, unlab_mu, unlab_logvar, self.args.beta)
             
                 labeled_preds = discriminator(mu)
                 unlabeled_preds = discriminator(unlab_mu)
@@ -92,12 +122,24 @@ class multi_modal_VAAL_Solver2:
 
                 # sample new batch if needed to train the adversarial network
                 if count < (self.args.num_vae_steps - 1):
-                    labeled_imgs, _ = next(labeled_data)
-                    unlabeled_imgs = next(unlabeled_data)
 
-                    labeled_imgs = labeled_imgs.to(device=self.args.device, dtype=torch.float32)
-                    unlabeled_imgs = unlabeled_imgs.to(device=self.args.device, dtype=torch.float32)
-                    labels = labels.to(device=self.args.device, dtype=torch.long)
+                    if recons == "image":
+                        labeled_imgs, _ = next(labeled_data)
+                        unlabeled_imgs = next(unlabeled_data)
+
+                        labeled_imgs = labeled_imgs.to(device=self.args.device, dtype=torch.float32)
+                        unlabeled_imgs = unlabeled_imgs.to(device=self.args.device, dtype=torch.float32)
+                        labels = labels.to(device=self.args.device, dtype=torch.long)
+                    elif recons == "depth":
+                        labeled_imgs, labeled_depths, _ = next(labeled_data)
+                        unlabeled_imgs, unlabeled_depths = next(unlabeled_data)
+
+                        labeled_imgs = labeled_imgs.to(device=self.args.device, dtype=torch.float32)
+                        labeled_depths = labeled_depths.to(device=self.args.device, dtype=torch.float32)
+
+                        unlabeled_imgs = unlabeled_imgs.to(device=self.args.device, dtype=torch.float32)
+                        unlabeled_depths = unlabeled_depths.to(device=self.args.device, dtype=torch.float32)
+                        labels = labels.to(device=self.args.device, dtype=torch.long)
 
 
             # Discriminator step
@@ -125,19 +167,33 @@ class multi_modal_VAAL_Solver2:
 
                 # sample new batch if needed to train the adversarial network
                 if count < (self.args.num_adv_steps - 1):
-                    labeled_imgs, _ = next(labeled_data)
-                    unlabeled_imgs = next(unlabeled_data)
 
-                    
-                    labeled_imgs = labeled_imgs.to(device=self.args.device, dtype=torch.float32)
-                    unlabeled_imgs = unlabeled_imgs.to(device=self.args.device, dtype=torch.float32)
-                    labels = labels.to(device=self.args.device, dtype=torch.long)
+                    if recons == "image":
+                        labeled_imgs, _ = next(labeled_data)
+                        unlabeled_imgs = next(unlabeled_data)
+
+                        
+                        labeled_imgs = labeled_imgs.to(device=self.args.device, dtype=torch.float32)
+                        unlabeled_imgs = unlabeled_imgs.to(device=self.args.device, dtype=torch.float32)
+                        labels = labels.to(device=self.args.device, dtype=torch.long)
+
+                    elif recons == "depth":
+
+                        labeled_imgs, labeled_depths, _ = next(labeled_data)
+                        unlabeled_imgs, unlabeled_depths = next(unlabeled_data)
+
+                        labeled_imgs = labeled_imgs.to(device=self.args.device, dtype=torch.float32)
+                        labeled_depths = labeled_depths.to(device=self.args.device, dtype=torch.float32)
+
+                        unlabeled_imgs = unlabeled_imgs.to(device=self.args.device, dtype=torch.float32)
+                        unlabeled_depths = unlabeled_depths.to(device=self.args.device, dtype=torch.float32)
+                        labels = labels.to(device=self.args.device, dtype=torch.long)
                 
 
             if iter_count % 100 == 0:
                 
-                print('Current vae model loss: {:.4f}'.format(total_vae_loss.item()))
-                print('Current discriminator model loss: {:.4f}'.format(dsc_loss.item()))
+                print(recons + ': Current vae model loss: {:.4f}'.format(total_vae_loss.item()))
+                print(recons + ': Current discriminator model loss: {:.4f}'.format(dsc_loss.item()))
 
          
         Path(str(self.dir_checkpoint)+'/'+self.args.expt+'/VAAL').mkdir(parents=True, exist_ok=True)

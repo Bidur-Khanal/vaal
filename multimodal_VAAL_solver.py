@@ -177,7 +177,6 @@ class multi_modal_VAAL_Solver:
         MSE2 = self.mse_loss(depth_recon,depth)
         KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
         KLD = KLD * beta
-
         if self.args.adaptive_mse:
             mse_2 = self.args.mse_gamma2 * np.exp(-2 * (self.args.split_step* self.args.budget)/(self.args.num_images-self.args.num_val))
             MSE = self.args.mse_gamma1*MSE1 + mse_2*MSE2

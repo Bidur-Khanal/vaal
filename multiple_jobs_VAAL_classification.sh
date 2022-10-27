@@ -5,9 +5,9 @@ dir="sbatch_log/classification_dataset_liver_seg_gallbladder_filtered_small"
 
 adversary_param=$"10"
 num_vae_steps=$"2"
-for seed in 0 255 1000
+for seed in 0 255 1000 2550 100
 do
-    EXPT=small_classification_dataset_liver_seg_gallbladder_removed_VAAL_seed_"$seed"
+    EXPT=final_small_classification_dataset_liver_seg_gallbladder_removed_VAAL_seed_"$seed"
     STD=$dir/STD_VAAL_seed_"$seed".out
     ERR=$dir/ERR_VAAL_seed_"$seed".err
     METHOD="VAAL"

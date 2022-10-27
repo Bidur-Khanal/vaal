@@ -46,7 +46,7 @@ def main(args):
     # (Initialize logging)
     # experiment = wandb.init(project='U-Net-active-learning-final-RC-2-classes')
     # experiment = wandb.init(project='U-Net-active-learning-final-RC-nogallbladder-no-less-than-3-classes')
-    experiment = wandb.init(project='U-Net-active-learning-final-RC-nogallbladder-no-less-than-3-classes-small')
+    experiment = wandb.init(project='final-U-Net-active-learning-final-RC-nogallbladder-no-less-than-3-classes-small')
 
     # if args.dataset == 'cifar10':
     #     test_dataloader = data.DataLoader(
@@ -343,7 +343,7 @@ def main(args):
         
                 })
 
-        fix_seed(args.seed)
+        #fix_seed(args.seed)
 
         if args.task_type == "segmentation":
             task_model = UNet(n_channels=3, n_classes=args.num_classes, bilinear=args.bilinear)
@@ -480,6 +480,6 @@ def main(args):
 
 if __name__ == '__main__':
     args = arguments.get_args()
-    fix_seed(args.seed)
+    #fix_seed(args.seed)
     main(args)
 

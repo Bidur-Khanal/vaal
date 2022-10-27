@@ -28,13 +28,13 @@ job_File="sbatch_misc_cls.sh"
 # sbatch -J $EXPT -o $STD -t 00-05:00:00 -e $ERR $job_File
 
 
-dir="sbatch_log/with_replacement_classification_dataset_liver_seg_gallbladder_filtered_small"
-adversary_param=$"25"
+dir="sbatch_log/classification_dataset_liver_seg_gallbladder_filtered_small"
+adversary_param=$"10"
 num_vae_steps=$"2"
 mse_gamma=$"1"
-for seed in 0 255 1000
+for seed in 0 255 1000 2550 100
 do
-    EXPT=with_replacement_small_classification_dataset_liver_seg_gallbladder_removed_EXPT_MULTI_VAAL_adver"$adversary_param"_adaptive_mse_Seed"$seed"
+    EXPT=final_small_classification_dataset_liver_seg_gallbladder_removed_EXPT_MULTI_VAAL_adver"$adversary_param"_adaptive_mse_Seed"$seed"
     STD=$dir/STD_MULTI_VAAL_adver"$adversary_param"_adaptive_mse_Seed"$seed".out
     ERR=$dir/ERR_MULTI_VAAL_adver"$adversary_param"_adaptive_mse_Seed"$seed".err
     METHOD="multimodal_VAAL"
