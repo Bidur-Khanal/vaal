@@ -93,15 +93,14 @@ class AdversarySampler_multimodal2:
 
         all_preds_images = torch.stack(all_preds_images)
         all_preds_images = all_preds_images.view(-1)
-        # need to multiply by -1 to be able to use torch.topk 
-        all_preds_images *= -1
-
+        
         all_preds_depths = torch.stack(all_preds_depths)
         all_preds_depths = all_preds_depths.view(-1)
+        
+        all_preds = torch.add(all_preds_images, all_preds_depths)
         # need to multiply by -1 to be able to use torch.topk 
-        all_preds_depths *= -1
-
-        all_preds = torch.mul(all_preds_images, all_preds_depths)
+        all_preds *= -1
+        
         # select the points which the discriminator thinks are the most likely to be unlabeled
         _, querry_indices = torch.topk(all_preds, int(self.budget))
         querry_pool_indices = list(np.asarray(unlabeled_indices)[querry_indices])
