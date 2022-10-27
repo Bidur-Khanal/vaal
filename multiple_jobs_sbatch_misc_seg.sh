@@ -31,13 +31,13 @@ job_File="sbatch_misc_seg.sh"
 # sbatch -J $EXPT -o $STD -t 00-07:00:00 -e $ERR $job_File
 
 
-dir="sbatch_log/with_replacement_dataset_liver_seg_gallbladder_removed_class_no_less_than_3_small"
+dir="sbatch_log/dataset_liver_seg_gallbladder_removed_class_no_less_than_3_small"
 adversary_param=$"25"
 num_vae_steps=$"2"
 mse_gamma=$"1"
-for seed in 0 255 1000
+for seed in 0 255 1000 2550 100
 do
-    EXPT=with_replacement_small_dataset_liver_seg_gallbladder_removed_class_no_less_than_3_EXPT_MULTI_VAAL_adver"$adversary_param"_adaptive_mse_Seed"$seed"
+    EXPT=final_small_dataset_liver_seg_gallbladder_removed_class_no_less_than_3_EXPT_MULTI_VAAL_adver"$adversary_param"_adaptive_mse_Seed"$seed"
     STD=$dir/STD_MULTI_VAAL_adver"$adversary_param"_adaptive_mse_Seed"$seed".out
     ERR=$dir/ERR_MULTI_VAAL_adver"$adversary_param"_adaptive_mse_Seed"$seed".err
     METHOD="multimodal_VAAL"

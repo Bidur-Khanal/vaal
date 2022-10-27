@@ -8,10 +8,10 @@ adversary_param=$"25"
 num_vae_steps=$"2"
 for seed in 0 255 1000 2550 100
 do
-    EXPT=final_small_dataset_liver_seg_gallbladder_removed_class_no_less_than_3_EXPT_VAAL_seed_"$seed"
-    STD=$dir/STD_VAAL_seed_"$seed".out
-    ERR=$dir/ERR_VAAL_seed_"$seed".err
-    METHOD="VAAL"
+    EXPT=final_small_dataset_liver_seg_gallbladder_removed_class_no_less_than_3_EXPT_depth_VAAL_seed_"$seed"
+    STD=$dir/STD_depth_VAAL_seed_"$seed".out
+    ERR=$dir/ERR_depth_VAAL_seed_"$seed".err
+    METHOD="depth_VAAL"
     ADVER_PARAM=$adversary_param
     NUM_VAE=$num_vae_steps
     RAND_SAM_SEED=$seed

@@ -1,65 +1,23 @@
-from multimodal_VAAL_solver import multi_modal_VAAL_Solver
-from multimodal_VAAL_solver2 import multi_modal_VAAL_Solver2
-from depth_VAAL_solver import Depth_VAAL_Solver
-import torch
-from torchvision import datasets, transforms
-import torchvision.models as torch_models
-import torch.utils.data.sampler  as sampler
-import torch.utils.data as data
-
-import numpy as np
-import argparse
-import random
 import os
-
+import matplotlib.pyplot as plt
+import torch
+import torch.utils.data as data
+import sampler as query_Sampler
+import numpy as np
+import random
 from custom_datasets import *
 import model
 import multi_modal_model
-import multi_modal_model2
-import depth_VAAL_model
-import vgg
-from VAAL_solver import VAAL_Solver
 from utils import *
 import arguments
-from evaluate import evaluate
-from unet import UNet
-from task_solver import train_task
-
-from multi_label_classification_task_solver import train_multilabel_classifier
-import wandb
-import torch.backends.cudnn as cudnn
-
-## Set Seed
-def fix_seed(seed):
-    # random
-    random.seed(seed)
-    # Numpy
-    np.random.seed(seed)
-    # Pytorch
-    torch.manual_seed(seed)
-    cudnn.deterministic = True
-
+from sklearn.manifold import TSNE
+import seaborn as sns
+import torch.nn as nn
 
 
 def main(args):
 
-    # (Initialize logging)
-    # experiment = wandb.init(project='U-Net-active-learning-final-RC-2-classes')
-    # experiment = wandb.init(project='U-Net-active-learning-final-RC-nogallbladder-no-less-than-3-classes')
-    experiment = wandb.init(project='final-U-Net-active-learning-final-RC-nogallbladder-no-less-than-3-classes-small')
 
-    # if args.dataset == 'cifar10':
-    #     test_dataloader = data.DataLoader(
-    #             datasets.CIFAR10(args.data_path, download=True, transform=cifar_transformer(), train=False),
-    #         batch_size=args.batch_size, drop_last=False)
-
-    #     train_dataset = CIFAR10(args.data_path)
-
-    #     args.num_images = 50000
-    #     args.num_val = 5000
-    #     args.budget = 2500
-    #     args.initial_budget = 5000
-    #     args.num_classes = 10
 
     if args.dataset == 'liver-seg':
         
@@ -296,31 +254,24 @@ def main(args):
     else:
         raise NotImplementedError
 
-    # save the hyper-parameters in wandb
-    experiment.config.update(vars(args))
     
-
     all_indices = set(np.arange(args.num_images))
+    whole_sampler = data.sampler.SubsetRandomSampler(list(all_indices))
+    whole_dataloader = data.DataLoader(train_dataset, sampler = whole_sampler,
+            batch_size=args.batch_size, drop_last=True)
     random.seed(0)  #every time set the same seed
     val_indices = random.sample(all_indices, args.num_val)
     all_indices = np.setdiff1d(list(all_indices), val_indices)
 
-    if args.train_full:
-        initial_indices = all_indices.tolist()
-    else:
-        initial_indices = random.sample(list(all_indices), args.initial_budget)
+    
+
+    initial_indices = random.sample(list(all_indices), args.initial_budget)
     sampler = data.sampler.SubsetRandomSampler(initial_indices)
     val_sampler = data.sampler.SubsetRandomSampler(val_indices)
 
     # dataset with labels available
     querry_dataloader = data.DataLoader(train_dataset, sampler=sampler, 
             batch_size=args.batch_size, drop_last=True)
-    val_dataloader = data.DataLoader(train_dataset, sampler=val_sampler,
-            batch_size=args.batch_size, drop_last=False)
-    test_dataloader = data.DataLoader(test_dataset,
-            batch_size=args.batch_size, drop_last=False)
-    
- 
             
     args.device = torch.device('cuda:'+args.gpu_id if torch.cuda.is_available() else 'cpu')
    
@@ -330,42 +281,6 @@ def main(args):
     
     current_indices = list(initial_indices)
     for i, split in enumerate(splits):
-
-
-        args.split_step = i
-        if args.with_replacement:
-            args.budget = args.budget * (i+1) 
-        # need to retrain all the models on the new images
-        # re initialize and retrain the models
-        # task_model = vgg.vgg16_bn(num_classes=args.num_classes)
-        experiment.log({
-                    'split': split,
-        
-                })
-
-        #fix_seed(args.seed)
-
-        if args.task_type == "segmentation":
-            task_model = UNet(n_channels=3, n_classes=args.num_classes, bilinear=args.bilinear)
-            task_model.to(device=args.device)
-            train_task(args, net=task_model, train_loader = querry_dataloader, val_loader = val_dataloader, test_loader= test_dataloader,
-                    epochs=args.epochs,
-                    batch_size=args.batch_size,
-                    learning_rate=args.lr,
-                    amp=args.amp, wandb_log= experiment, split = split)
-
-        elif args.task_type == "classification":
-           
-            task_model = torch_models.resnet18(pretrained= False, num_classes = args.num_classes)
-            task_model.to(device=args.device)
-            train_multilabel_classifier(args, net=task_model, train_loader = querry_dataloader, val_loader = val_dataloader, test_loader= test_dataloader,
-              epochs = args.epochs,
-              batch_size = args.batch_size,
-              learning_rate=args.lr,
-              wandb_log= experiment, split = split)
-
-        if args.train_full:
-            break
 
         ## all unlabeled train samples
         unlabeled_indices = np.setdiff1d(list(all_indices), current_indices)
@@ -378,91 +293,51 @@ def main(args):
 
         if args.method == 'VAAL':
             #### initilaize the VAAL models
-            VAAL_solver = VAAL_Solver(args, test_dataloader)
-            vae = model.VAE(args.latent_dim)
             discriminator = model.Discriminator(args.latent_dim)
+            vae = model.VAE(args.latent_dim)
 
-            vae = vae.to(device = args.device)
+            # load the checkpoint models
+            discriminator.load_state_dict(torch.load('./checkpoints/'+'/'+args.expt + 
+                                        '/'+ 'discriminator_checkpoint'+str(split)+'.pth'))
+            vae.load_state_dict(torch.load('./checkpoints/'+'/'+args.expt + 
+                                        '/'+ 'vae_checkpoint'+str(split)+'.pth'))
+ 
+            # send model to gpu
             discriminator = discriminator.to(device = args.device)
+            vae = vae.to(device = args.device)
+            
+            VAAL_sampler = query_Sampler.AdversarySampler(args.budget)
 
-            # train the models on the current data
-            vae, discriminator = VAAL_solver.train(split,querry_dataloader,
-                                                val_dataloader,
-                                                vae, 
-                                                discriminator,
-                                                unlabeled_dataloader)
-            sampled_indices = VAAL_solver.sample_for_labeling(vae, discriminator, unlabeled_dataloader, unlabeled_indices)
+
+            sampled_indices = VAAL_sampler.sample(vae, 
+                                             discriminator, 
+                                             unlabeled_dataloader, unlabeled_indices,
+                                             args.device)
 
 
         elif args.method == 'multimodal_VAAL':
             
             #### initilaize the VAAL models
-            multimodal_VAAL_solver = multi_modal_VAAL_Solver(args,test_dataloader)
             vae = multi_modal_model.VAE(args.latent_dim)
             discriminator = multi_modal_model.Discriminator(args.latent_dim)
 
+            # load the checkpoint models
+            discriminator.load_state_dict(torch.load('./checkpoints/'+'/'+args.expt + 
+                                        '/'+ 'discriminator_checkpoint'+str(split)+'.pth'))
+            vae.load_state_dict(torch.load('./checkpoints/'+'/'+args.expt + 
+                                        '/'+ 'vae_checkpoint'+str(split)+'.pth'))
+
+            # send the model to gpu
             vae = vae.to(device = args.device)
             discriminator = discriminator.to(device = args.device)
 
-            # train the models on the current data
-            vae, discriminator = multimodal_VAAL_solver.train(split,querry_dataloader,
-                                                val_dataloader,
-                                                vae, 
-                                                discriminator,
-                                                unlabeled_dataloader)
-            sampled_indices = multimodal_VAAL_solver.sample_for_labeling(vae, discriminator, unlabeled_dataloader, unlabeled_indices)
-
-
-        elif args.method == 'multimodal_VAAL2':
             
-            #### initilaize the VAAL models
-            multimodal_VAAL_solver2 = multi_modal_VAAL_Solver2(args,test_dataloader)
-            vae_image = multi_modal_model2.VAEimage(args.latent_dim)
-            discriminator_image = multi_modal_model.Discriminator(args.latent_dim)
-            vae_depth = multi_modal_model2.VAEdepth(args.latent_dim)
-            discriminator_depth = multi_modal_model.Discriminator(args.latent_dim)
 
-            vae_image = vae_image.to(device = args.device)
-            discriminator_image = discriminator_image.to(device = args.device)
-
-            vae_depth = vae_depth.to(device = args.device)
-            discriminator_depth = discriminator_depth.to(device = args.device)
-
-            # train the models on the current data
-            vae_image, discriminator_image = multimodal_VAAL_solver2.train(split,querry_dataloader,
-                                                val_dataloader,
-                                                vae_image, 
-                                                discriminator_image,
-                                                unlabeled_dataloader)
-
-            vae_depth, discriminator_depth = multimodal_VAAL_solver2.train(split,querry_dataloader,
-                                                val_dataloader,
-                                                vae_depth, 
-                                                discriminator_depth,
-                                                unlabeled_dataloader)
-
-
-            sampled_indices = multimodal_VAAL_solver2.sample_for_labeling(vae_image, discriminator_image, vae_depth, vae_depth, unlabeled_dataloader, unlabeled_indices)
-
-        elif args.method == 'depth_VAAL':
-            
-            #### initilaize the VAAL models
-            depth_vaal_solver = Depth_VAAL_Solver(args,test_dataloader)
-            
-            vae_depth = depth_VAAL_model.VAEdepth(args.latent_dim)
-            discriminator_depth = depth_VAAL_model.Discriminator(args.latent_dim)
-
-            vae_depth = vae_depth.to(device = args.device)
-            discriminator_depth = discriminator_depth.to(device = args.device)
-
-            vae_depth, discriminator_depth = depth_vaal_solver.train(split,querry_dataloader,
-                                                val_dataloader,
-                                                vae_depth, 
-                                                discriminator_depth,
-                                                unlabeled_dataloader)
-
-
-            sampled_indices = depth_vaal_solver.sample_for_labeling(vae_depth, vae_depth, unlabeled_dataloader, unlabeled_indices)
+            multimodal_VAAL_sampler = query_Sampler.AdversarySampler_multimodal(args.budget)
+            sampled_indices = multimodal_VAAL_sampler.sample(vae, 
+                                             discriminator, 
+                                             unlabeled_dataloader, unlabeled_indices,
+                                             args.device)
 
         elif args.method == "RandomSampling":
             
@@ -470,16 +345,128 @@ def main(args):
             random.shuffle(unlabeled_indices)
             sampled_indices = unlabeled_indices[:args.budget]
 
-        if args.with_replacement:
-            current_indices = list(initial_indices) + list(sampled_indices)
+        old_indices = list(current_indices)
+        current_indices = list(current_indices) + list(sampled_indices)
+        
+
+        if split == 0.25:
+           
+            if args.method == "RandomSampling":
+                tsne(old_indices, sampled_indices, unlabeled_indices, whole_dataloader, vae = None, disc= None, method = "RandomSampling")
+            elif args.method == "VAAL":
+                tsne(old_indices, sampled_indices, unlabeled_indices, whole_dataloader, vae = vae, disc = discriminator, method = "VAAL")
+            elif args.method == "multimodal_VAAL":
+                tsne(old_indices, sampled_indices, unlabeled_indices, whole_dataloader, vae = vae, disc = discriminator, method = "multimodal_VAAL")
+
+            break
+
+        
+def extract_features (dataloader, model_name = "inception_v3", vae = None, disc = None):
+    features_data = []
+    
+
+    if model_name == "inception_v3":
+        model = torchvision.models.inception_v3(pretrained=True)
+        model.fc = nn.Identity()
+        model.to(args.device)
+        model.eval()
+
+    elif (model_name == "multimodalvae") or (model_name == "vae"):
+        if  disc:
+            model = vae
+            model.eval()
+
+            model_disc = disc
+            #model_disc.net = nn.Sequential(*[model_disc.net[i] for i in range(4)])
+            model_disc.eval()
         else:
-            current_indices = list(current_indices) + list(sampled_indices)
-        sampler = data.sampler.SubsetRandomSampler(current_indices)
-        querry_dataloader = data.DataLoader(train_dataset, sampler=sampler, 
-                batch_size=args.batch_size, drop_last=True)
+            model = vae
+            model.eval()
+            
+    
+    # put features and labels into arrays
+    for batch_ix, (batch_image, batch_mask, batch_depth) in enumerate(dataloader):
+        batch_image = batch_image.to(args.device)
+        with torch.no_grad():
+            if disc:
+                if model_name =="multimodalvae":
+                    _,_,_,batch_feature,_ = model(batch_image)
+                elif model_name =="vae":
+                    _,_,batch_feature,_ = model(batch_image)
+
+                batch_feature = model_disc(batch_feature)
+            else:
+                if model_name == "inception_v3":
+                    batch_feature = model(batch_image)
+                elif model_name =="multimodalvae":
+                    _,_,_,batch_feature,_ = model(batch_image)
+                elif model_name =="vae":
+                    _,_,batch_feature,_ = model(batch_image)
+        features_data.append(batch_feature.flatten().cpu().numpy())
+    
+    return torch.Tensor(features_data)
+
+def tsne(old_indices, sampled_indices, unlabeled_indices, whole_dataloader, vae = None, disc= None, method = "RandomSampling"):
+    
+
+    # whole_features= extract_features(whole_dataloader)
+    
+    if method == "VAAL":
+        whole_features = extract_features(whole_dataloader, model_name= "vae", vae = vae, disc= disc) 
+    elif method == "multimodal_VAAL" :
+        whole_features = extract_features(whole_dataloader, model_name= "multimodalvae", vae = vae,disc= disc) 
+    else:
+        whole_features= extract_features(whole_dataloader)
+
+
+    labels = ["unlabelled" for i in range (len(unlabeled_indices))]
+    tsne = TSNE(n_components=2,n_iter=300)
+    tsne_results = tsne.fit_transform(whole_features)
+    print(len(tsne_results))
+    tsne_X = tsne_results[:,0][unlabeled_indices]
+    tsne_Y = tsne_results[:,1][unlabeled_indices]
+    fig, ax = plt.subplots(figsize=(10, 8))
+    sns.scatterplot(
+        x=tsne_X, y=tsne_Y,
+        hue= labels,
+        data=tsne_results,
+        legend="full",
+        alpha=0.3)
+
+    tsne_X = tsne_results[:,0][old_indices]
+    tsne_Y = tsne_results[:,1][old_indices]
+    labels = ["labelled" for i in range (len(old_indices))]
+
+    sns.scatterplot(
+        x=tsne_X, y=tsne_Y,
+        hue= labels,
+        data=tsne_results,
+        legend="full",
+        color=".2",
+        palette="rocket",
+        alpha=0.8)
+    
+    tsne_X = tsne_results[:,0][sampled_indices]
+    tsne_Y = tsne_results[:,1][sampled_indices]
+    labels = ["selected" for i in range (len(sampled_indices))]
+
+    sns.scatterplot(
+        x=tsne_X, y=tsne_Y,
+        hue= labels,
+        data=tsne_results,
+        legend="full",
+        color=".5",
+        palette="viridis",
+        alpha=0.8)
+    
+
+    save_name = "VAAL_disc.png"
+    plt.savefig(save_name)
+    plt.close(fig)
+
+
 
 if __name__ == '__main__':
     args = arguments.get_args()
-    #fix_seed(args.seed)
     main(args)
 

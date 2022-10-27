@@ -39,8 +39,8 @@ class Depth_VAAL_Solver:
         # self.args.train_iterations = int(((self.args.budget*current_split+ self.args.initial_budget) * self.args.query_train_epochs)/self.args.batch_size)
         
         
-        labeled_data = self.read_data(querry_dataloader, recons= recons)
-        unlabeled_data = self.read_data(unlabeled_dataloader, labels=False, recons= recons)
+        labeled_data = self.read_data(querry_dataloader)
+        unlabeled_data = self.read_data(unlabeled_dataloader, labels=False)
 
         optim_vae = optim.Adam(vae.parameters(), lr=self.args.alpha1)
         optim_discriminator = optim.Adam(discriminator.parameters(), lr=self.args.alpha2)
@@ -145,8 +145,8 @@ class Depth_VAAL_Solver:
 
             if iter_count % 100 == 0:
                 
-                print(recons + ': Current vae model loss: {:.4f}'.format(total_vae_loss.item()))
-                print(recons + ': Current discriminator model loss: {:.4f}'.format(dsc_loss.item()))
+                print('Current vae model loss: {:.4f}'.format(total_vae_loss.item()))
+                print('Current discriminator model loss: {:.4f}'.format(dsc_loss.item()))
 
          
         Path(str(self.dir_checkpoint)+'/'+self.args.expt+'/VAAL').mkdir(parents=True, exist_ok=True)

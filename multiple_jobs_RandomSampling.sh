@@ -18,9 +18,9 @@ dir="sbatch_log/dataset_liver_seg_gallbladder_removed_class_no_less_than_3_small
 adversary_param=$"25"
 num_vae_steps=$"2"
 
-for seed in 0 255 1000
+for seed in 0 255 1000 2550 100
 do
-    EXPT=small_dataset_liver_seg_gallbladder_removed_class_no_less_than_3_EXPT_RandomSampling_seed_"$seed"
+    EXPT=final_small_dataset_liver_seg_gallbladder_removed_class_no_less_than_3_EXPT_RandomSampling_seed_"$seed"
     STD=$dir/STD_RandomSampling_seed_"$seed".out
     ERR=$dir/ERR_RandomSampling_seed_"$seed".err
     METHOD="RandomSampling"
